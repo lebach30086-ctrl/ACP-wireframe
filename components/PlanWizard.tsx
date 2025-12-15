@@ -15,6 +15,7 @@ const PlanWizard: React.FC<PlanWizardProps> = ({ onClose, onSave }) => {
     // Form State
     const [formData, setFormData] = useState({
         accountName: '',
+        companyName: '',
         fiscalYear: 'FY2024',
         description: '',
         revenue: '',
@@ -42,6 +43,8 @@ const PlanWizard: React.FC<PlanWizardProps> = ({ onClose, onSave }) => {
             const newPlan: AccountPlan = {
                 id: `new-${Date.now()}`,
                 accountName: formData.accountName || 'New Account Plan',
+                companyId: `comp-${Date.now()}`,
+                companyName: formData.companyName || 'New Company',
                 fiscalYear: formData.fiscalYear,
                 owner: 'John Doe', // Default to current user
                 status: 'Draft',
@@ -99,13 +102,13 @@ const PlanWizard: React.FC<PlanWizardProps> = ({ onClose, onSave }) => {
                         <div className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-slate-700">Account Name</label>
+                                    <label className="text-sm font-medium text-slate-700">Plan Name</label>
                                     <input 
                                         type="text" 
                                         value={formData.accountName}
                                         onChange={(e) => handleInputChange('accountName', e.target.value)}
                                         className="w-full px-3 py-2 rounded-lg border border-slate-600 bg-slate-800 text-white focus:ring-2 focus:ring-blue-500 outline-none placeholder-slate-500 shadow-inner" 
-                                        placeholder="e.g. Acme Corp" 
+                                        placeholder="e.g. Global Expansion 2024" 
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -119,6 +122,16 @@ const PlanWizard: React.FC<PlanWizardProps> = ({ onClose, onSave }) => {
                                         <option value="FY2025">FY2025</option>
                                     </select>
                                 </div>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-slate-700">Company Name</label>
+                                <input 
+                                    type="text" 
+                                    value={formData.companyName}
+                                    onChange={(e) => handleInputChange('companyName', e.target.value)}
+                                    className="w-full px-3 py-2 rounded-lg border border-slate-600 bg-slate-800 text-white focus:ring-2 focus:ring-blue-500 outline-none placeholder-slate-500 shadow-inner" 
+                                    placeholder="e.g. Acme Corp" 
+                                />
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-slate-700">Description</label>

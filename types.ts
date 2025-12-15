@@ -1,6 +1,9 @@
 export interface AccountPlan {
     id: string;
-    accountName: string;
+    accountName: string; // This represents the Plan Name (e.g., "Global Expansion 2024")
+    companyId: string;   // Reference to the Company
+    companyName: string; // Display name of the Company
+    companySegment?: 'Enterprise' | 'SME' | 'Corporate' | 'Retail'; // Synced from Company
     fiscalYear: string;
     owner: string;
     status: 'Draft' | 'Active' | 'Review' | 'Completed';
@@ -14,6 +17,28 @@ export interface AccountPlan {
     employees?: string;
     location?: string;
     tier?: string;
+  }
+
+  export interface Company {
+    id: string;
+    name: string;
+    cif: string;
+    taxCode: string;
+    legalRepresentative: string;
+    segment: 'Enterprise' | 'SME' | 'Corporate' | 'Retail';
+    
+    // Detailed fields
+    address?: string;
+    officeAddress?: string;
+    email?: string;
+    phone?: string;
+    description?: string;
+    industry?: string;
+    licenseDate?: string;
+    operatingDate?: string;
+    owner?: string;
+    ownerEmail?: string;
+    avatarUrl?: string; // For the company logo/icon placeholder
   }
   
   export interface Goal {

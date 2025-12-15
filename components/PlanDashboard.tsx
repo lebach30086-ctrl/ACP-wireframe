@@ -15,6 +15,16 @@ interface PlanDashboardProps {
 const PlanDashboard: React.FC<PlanDashboardProps> = ({ plan, onBack, onUpdatePlan }) => {
     const [activeTab, setActiveTab] = useState<PlanTab>(PlanTab.OVERVIEW);
 
+    const getStatusStyles = (status: string) => {
+        switch (status) {
+            case 'Active': return 'bg-green-100 text-green-700 border-green-200';
+            case 'Draft': return 'bg-slate-100 text-slate-700 border-slate-200';
+            case 'Review': return 'bg-orange-100 text-orange-700 border-orange-200';
+            case 'Completed': return 'bg-blue-100 text-blue-700 border-blue-200';
+            default: return 'bg-slate-100 text-slate-700 border-slate-200';
+        }
+    };
+
     return (
         <div className="space-y-6">
             {/* Header Navigation Area */}
@@ -30,7 +40,7 @@ const PlanDashboard: React.FC<PlanDashboardProps> = ({ plan, onBack, onUpdatePla
                     <div>
                         <div className="flex items-center gap-3 mb-1">
                             <h1 className="text-3xl font-bold text-slate-900">{plan.accountName}</h1>
-                            <span className="px-2.5 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-bold border border-green-200 uppercase tracking-wide">
+                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border uppercase tracking-wide ${getStatusStyles(plan.status)}`}>
                                 {plan.status}
                             </span>
                         </div>
