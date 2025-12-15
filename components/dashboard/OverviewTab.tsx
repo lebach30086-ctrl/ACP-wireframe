@@ -260,7 +260,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ plan, onUpdatePlan }) => {
                             type="text"
                             value={profileForm.industry}
                             onChange={(e) => setProfileForm({...profileForm, industry: e.target.value})}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-700 text-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500 outline-none"
                             placeholder="e.g. Technology"
                         />
                     </div>
@@ -270,7 +270,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ plan, onUpdatePlan }) => {
                             type="text"
                             value={profileForm.employees}
                             onChange={(e) => setProfileForm({...profileForm, employees: e.target.value})}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-700 text-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500 outline-none"
                             placeholder="e.g. 5,000+"
                         />
                     </div>
@@ -280,7 +280,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ plan, onUpdatePlan }) => {
                             type="text"
                             value={profileForm.location}
                             onChange={(e) => setProfileForm({...profileForm, location: e.target.value})}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-700 text-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500 outline-none"
                             placeholder="e.g. New York, NY"
                         />
                     </div>
@@ -289,7 +289,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ plan, onUpdatePlan }) => {
                         <select
                              value={profileForm.tier}
                              onChange={(e) => setProfileForm({...profileForm, tier: e.target.value})}
-                             className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                             className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-700 text-white focus:ring-2 focus:ring-blue-500 outline-none"
                         >
                             <option value="Strategic">Strategic</option>
                             <option value="Growth">Growth</option>
