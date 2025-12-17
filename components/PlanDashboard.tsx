@@ -5,6 +5,7 @@ import OverviewTab from './dashboard/OverviewTab';
 import MarketTab from './dashboard/MarketTab';
 import StrategyTab from './dashboard/StrategyTab';
 import ExecutionTab from './dashboard/ExecutionTab';
+import ApprovalTab from './dashboard/ApprovalTab';
 
 interface PlanDashboardProps {
     plan: AccountPlan;
@@ -65,17 +66,18 @@ const PlanDashboard: React.FC<PlanDashboardProps> = ({ plan, onBack, onUpdatePla
                 </div>
 
                 {/* Tabs */}
-                <div className="flex gap-6 border-b border-slate-200">
+                <div className="flex gap-6 border-b border-slate-200 overflow-x-auto">
                     {[
                         { id: PlanTab.OVERVIEW, label: 'Overview & Performance' },
-                        { id: PlanTab.MARKET, label: 'Market & Insights' },
-                        { id: PlanTab.STRATEGY, label: 'Strategy & People' },
-                        { id: PlanTab.EXECUTION, label: 'Execution & Goals' },
+                        { id: PlanTab.ANALYSIS, label: 'Strategic Analysis' },
+                        { id: PlanTab.STAKEHOLDERS, label: 'Stakeholder Map' },
+                        { id: PlanTab.ACTION_PLAN, label: 'Action Plan & Tracking' },
+                        { id: PlanTab.APPROVAL, label: 'Approval & Budget' },
                     ].map((tab) => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`pb-3 text-sm font-medium transition-all relative
+                            className={`pb-3 text-sm font-medium transition-all relative whitespace-nowrap px-1
                                 ${activeTab === tab.id ? 'text-blue-600' : 'text-slate-500 hover:text-slate-800'}
                             `}
                         >
@@ -91,9 +93,10 @@ const PlanDashboard: React.FC<PlanDashboardProps> = ({ plan, onBack, onUpdatePla
             {/* Tab Content */}
             <div className="min-h-[500px]">
                 {activeTab === PlanTab.OVERVIEW && <OverviewTab plan={plan} onUpdatePlan={onUpdatePlan} />}
-                {activeTab === PlanTab.MARKET && <MarketTab plan={plan} />}
-                {activeTab === PlanTab.STRATEGY && <StrategyTab plan={plan} />}
-                {activeTab === PlanTab.EXECUTION && <ExecutionTab plan={plan} />}
+                {activeTab === PlanTab.ANALYSIS && <MarketTab plan={plan} />}
+                {activeTab === PlanTab.STAKEHOLDERS && <StrategyTab plan={plan} />}
+                {activeTab === PlanTab.ACTION_PLAN && <ExecutionTab plan={plan} />}
+                {activeTab === PlanTab.APPROVAL && <ApprovalTab plan={plan} />}
             </div>
         </div>
     );

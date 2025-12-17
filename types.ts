@@ -74,7 +74,8 @@ export interface AccountPlan {
   
   export enum PlanTab {
     OVERVIEW = 'overview',
-    MARKET = 'market',
-    STRATEGY = 'strategy',
-    EXECUTION = 'execution',
+    ANALYSIS = 'analysis',
+    STAKEHOLDERS = 'stakeholders',
+    ACTION_PLAN = 'action_plan',
+    APPROVAL = 'approval'
   }

@@ -8,7 +8,7 @@ import {
     CartesianGrid, 
     Tooltip,
 } from 'recharts';
-import { TrendingUp, Target, Award, Calendar, Users, File, Plus, Edit2, BarChart2 } from 'lucide-react';
+import { TrendingUp, Target, Award, Plus, Edit2, BarChart2, ScanLine, FileText, Globe, Building, DollarSign, Wallet } from 'lucide-react';
 import { AccountPlan } from '../../types';
 import Modal from '../ui/Modal';
 
@@ -43,8 +43,9 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ plan, onUpdatePlan }) => {
 
     return (
         <div className="grid grid-cols-12 gap-6 animate-fade-in">
-            {/* Account Profile Card */}
+            {/* 1.4.1 Account Profile & 1.4.2 Identity */}
             <div className="col-span-12 lg:col-span-4 space-y-6">
+                {/* Account Profile */}
                 <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm relative group">
                     <button 
                         onClick={() => {
@@ -60,7 +61,10 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ plan, onUpdatePlan }) => {
                     >
                         {isNew ? <Plus size={16} /> : <Edit2 size={16} />}
                     </button>
-                    <h3 className="text-lg font-bold text-slate-800 mb-4">Account Profile</h3>
+                    <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <Building size={20} className="text-blue-600"/> 
+                        Account Profile
+                    </h3>
                     
                     {isNew && !plan.industry && !plan.location ? (
                          <div className="flex flex-col items-center justify-center py-6 text-slate-400 border border-dashed border-slate-200 rounded-lg">
@@ -91,7 +95,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ plan, onUpdatePlan }) => {
                     )}
                 </div>
 
-                {/* Key Metrics */}
+                {/* 1.4.5 & 1.4.6 Metrics (Moved Up) */}
                  <div className="grid grid-cols-2 gap-4">
                     <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                         <div className="flex items-center gap-2 text-slate-500 mb-2">
@@ -113,55 +117,50 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ plan, onUpdatePlan }) => {
                         <div className={`text-2xl font-bold ${isNew ? 'text-slate-300' : 'text-green-600'}`}>
                             {isNew ? '-' : '85'}
                         </div>
-                        {!isNew && <div className="text-xs text-slate-400">Out of 100</div>}
+                        {!isNew && <div className="text-xs text-slate-400">Finance Health</div>}
                     </div>
                 </div>
 
-                {/* Recent Projects */}
-                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col h-64">
+                {/* 1.4.2 Identity & Finance (Moved Down) */}
+                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm relative">
                     <div className="flex justify-between items-center mb-4">
-                         <h3 className="text-lg font-bold text-slate-800">Active Opportunities</h3>
-                         {!isNew && <button className="text-blue-600 text-xs font-semibold">View All</button>}
-                         {isNew && <button className="p-1 text-blue-600 hover:bg-blue-50 rounded"><Plus size={18} /></button>}
+                        <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <FileText size={20} className="text-indigo-600" />
+                            Info & Finance
+                        </h3>
+                         <button className="flex items-center gap-1 text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded border border-indigo-100 hover:bg-indigo-100 transition-colors">
+                            <ScanLine size={12} /> OCR Import
+                        </button>
                     </div>
-                    {isNew ? (
-                        <div className="flex-1 flex flex-col items-center justify-center text-slate-400">
-                             <div className="bg-slate-50 p-3 rounded-full mb-3">
-                                <File size={24} />
-                             </div>
-                             <p className="text-sm font-medium">No active opportunities</p>
+
+                    <div className="space-y-3">
+                        <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+                            <span className="text-xs text-slate-500 block mb-1">Tax Code</span>
+                            <span className="font-mono text-sm text-slate-800 font-semibold">{isNew ? '--' : '0300300300'}</span>
                         </div>
-                    ) : (
-                        <div className="space-y-3">
-                            {[
-                                { name: 'Cloud Migration Phase 2', val: '$450k', stage: 'Negotiation' },
-                                { name: 'Security Audit', val: '$80k', stage: 'Discovery' },
-                            ].map((proj, i) => (
-                                <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
-                                    <div>
-                                        <div className="font-medium text-sm text-slate-800">{proj.name}</div>
-                                        <div className="text-xs text-slate-500">{proj.stage}</div>
-                                    </div>
-                                    <div className="font-bold text-slate-700 text-sm">{proj.val}</div>
-                                </div>
-                            ))}
+                         <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+                            <span className="text-xs text-slate-500 block mb-1">Annual Revenue (Last Year)</span>
+                            <span className="font-mono text-sm text-slate-800 font-semibold">{isNew ? '--' : '$125M USD'}</span>
                         </div>
-                    )}
+                        <div className="flex gap-2 mt-2">
+                            <button className="flex-1 py-2 border border-dashed border-slate-300 rounded text-slate-500 text-xs hover:border-blue-500 hover:text-blue-600 transition-colors flex items-center justify-center gap-1">
+                                <Plus size={12} /> Financial Report
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {/* Performance Charts */}
+            {/* 1.4.3 & 1.4.4 Center/Right Column */}
             <div className="col-span-12 lg:col-span-8 space-y-6">
-                 {/* Revenue Chart */}
-                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm min-h-[350px] flex flex-col relative group">
-                     {isNew && (
-                        <button className="absolute top-4 right-4 text-blue-600 font-medium text-sm flex items-center gap-1 hover:underline z-10">
-                            <Plus size={16} /> Add Data
-                        </button>
-                    )}
+                 {/* 1.4.4 Revenue Performance */}
+                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm min-h-[300px] flex flex-col relative group">
                     <div className="flex justify-between items-center mb-6">
                         <div>
-                            <h3 className="text-lg font-bold text-slate-800">Revenue Performance</h3>
+                            <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                <DollarSign size={20} className="text-green-600" />
+                                Revenue Performance
+                            </h3>
                             <p className="text-sm text-slate-500">Actual vs Target (k USD)</p>
                         </div>
                         {!isNew && (
@@ -209,41 +208,59 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ plan, onUpdatePlan }) => {
                     </div>
                 </div>
 
-                {/* Timeline / Activity */}
-                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col min-h-[300px]">
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-lg font-bold text-slate-800">Recent Timeline</h3>
-                        <button className="text-blue-600 hover:bg-blue-50 p-1.5 rounded-lg transition-colors">
-                            <Plus size={18} />
-                        </button>
+                {/* 1.4.3 Business Model Canvas */}
+                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <div className="flex justify-between items-center mb-4">
+                         <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                             <Globe size={20} className="text-blue-500" />
+                             Business Model Canvas
+                         </h3>
+                         <button className="text-xs text-blue-600 hover:underline">Edit Canvas</button>
                     </div>
                     
-                    {isNew ? (
-                         <div className="flex-1 flex flex-col items-center justify-center text-slate-400">
-                             <div className="bg-slate-50 p-4 rounded-full mb-3">
-                                <Calendar size={32} />
+                    {/* Simplified Canvas Grid */}
+                    <div className="grid grid-cols-5 gap-2 h-[300px] text-xs">
+                        <div className="col-span-1 bg-slate-50 border border-slate-200 p-2 rounded flex flex-col gap-1">
+                            <span className="font-bold text-slate-700 block mb-1">Key Partners</span>
+                             <p className="text-slate-600 line-clamp-4">- Tech Providers<br/>- Logistics Firms<br/>- Gov Agencies</p>
+                        </div>
+                        <div className="col-span-1 flex flex-col gap-2">
+                             <div className="flex-1 bg-slate-50 border border-slate-200 p-2 rounded">
+                                <span className="font-bold text-slate-700 block mb-1">Key Activities</span>
+                                <p className="text-slate-600">R&D, Supply Chain Optimization</p>
                              </div>
-                             <p className="text-sm font-medium">No recent activity logged</p>
-                             <button className="mt-4 text-blue-600 text-sm font-medium hover:underline">Log Meeting or Event</button>
+                             <div className="flex-1 bg-slate-50 border border-slate-200 p-2 rounded">
+                                <span className="font-bold text-slate-700 block mb-1">Key Resources</span>
+                                <p className="text-slate-600">Data Centers, Skilled Workforce</p>
+                             </div>
                         </div>
-                    ) : (
-                        <div className="relative border-l-2 border-slate-200 ml-3 space-y-8">
-                            {[
-                                { date: 'Oct 24, 2023', title: 'QBR Meeting', desc: 'Conducted Quarterly Business Review with CIO.', icon: Calendar, color: 'bg-purple-100 text-purple-600' },
-                                { date: 'Oct 15, 2023', title: 'Contract Renewal', desc: 'Sent renewal proposal for FY2024.', icon: File, color: 'bg-blue-100 text-blue-600' },
-                                { date: 'Sep 28, 2023', title: 'Stakeholder Meeting', desc: 'Lunch with VP of Engineering.', icon: Users, color: 'bg-green-100 text-green-600' }
-                            ].map((item, i) => (
-                                <div key={i} className="relative pl-8">
-                                    <div className={`absolute -left-[9px] top-0 w-4 h-4 rounded-full border-2 border-white ring-1 ring-slate-200 ${i===0 ? 'bg-blue-500' : 'bg-slate-300'}`}></div>
-                                    <div>
-                                        <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{item.date}</span>
-                                        <h4 className="text-sm font-bold text-slate-800 mt-1">{item.title}</h4>
-                                        <p className="text-sm text-slate-600 mt-1">{item.desc}</p>
-                                    </div>
-                                </div>
-                            ))}
+                        <div className="col-span-1 bg-blue-50 border border-blue-100 p-2 rounded flex flex-col gap-1">
+                            <span className="font-bold text-blue-800 block mb-1">Value Propositions</span>
+                            <p className="text-blue-700">- High efficiency<br/>- Low latency<br/>- Global reach</p>
                         </div>
-                    )}
+                         <div className="col-span-1 flex flex-col gap-2">
+                             <div className="flex-1 bg-slate-50 border border-slate-200 p-2 rounded">
+                                <span className="font-bold text-slate-700 block mb-1">Relationships</span>
+                                <p className="text-slate-600">Dedicated Support, Self-service portal</p>
+                             </div>
+                             <div className="flex-1 bg-slate-50 border border-slate-200 p-2 rounded">
+                                <span className="font-bold text-slate-700 block mb-1">Channels</span>
+                                <p className="text-slate-600">Direct Sales, Online</p>
+                             </div>
+                        </div>
+                         <div className="col-span-1 bg-slate-50 border border-slate-200 p-2 rounded flex flex-col gap-1">
+                            <span className="font-bold text-slate-700 block mb-1">Segments</span>
+                            <p className="text-slate-600">- Enterprise<br/>- SMEs<br/>- Gov</p>
+                        </div>
+                        <div className="col-span-2 bg-slate-50 border border-slate-200 p-2 rounded">
+                            <span className="font-bold text-slate-700 block mb-1">Cost Structure</span>
+                            <p className="text-slate-600">Infrastructure, Salaries, Marketing</p>
+                        </div>
+                         <div className="col-span-3 bg-green-50 border border-green-100 p-2 rounded">
+                            <span className="font-bold text-green-800 block mb-1">Revenue Streams</span>
+                             <p className="text-green-700">Subscription Fees, Licensing, Consulting</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 

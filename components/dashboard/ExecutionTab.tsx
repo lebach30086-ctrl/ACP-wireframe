@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Goal, Task, AccountPlan } from '../../types';
-import { Plus, ChevronDown, CheckCircle2, Circle, MoreVertical, Calendar, User as UserIcon, ListTodo, Target } from 'lucide-react';
+import { Plus, CheckCircle2, Circle, MoreVertical, Calendar, ListTodo, Target, Mic, FileAudio } from 'lucide-react';
 import Modal from '../ui/Modal';
 
 interface ExecutionTabProps {
@@ -53,10 +53,13 @@ const ExecutionTab: React.FC<ExecutionTabProps> = ({ plan }) => {
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fade-in">
-            {/* GOALS WIDGET */}
+            {/* 1.7.1 Objectives / Goals */}
             <div className="lg:col-span-4 space-y-4">
                 <div className="flex justify-between items-center mb-2">
-                     <h3 className="text-lg font-bold text-slate-800">Goals</h3>
+                     <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                         <Target size={20} className="text-red-500" />
+                         Objectives
+                     </h3>
                      <button onClick={() => setIsGoalModalOpen(true)} className="text-blue-600 text-sm font-medium hover:underline flex items-center gap-1">
                         <Plus size={14} /> New Goal
                     </button>
@@ -106,11 +109,15 @@ const ExecutionTab: React.FC<ExecutionTabProps> = ({ plan }) => {
                 </div>
             </div>
 
-            {/* ACTION PLAN WIDGET */}
-            <div className="lg:col-span-8">
-                <div className="bg-white rounded-xl border border-slate-200 shadow-sm min-h-[500px] flex flex-col">
+            {/* 1.7.2 Task Management & 1.7.3 Progress */}
+            <div className="lg:col-span-8 flex flex-col gap-6">
+                {/* 1.7.2 Tasks */}
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm flex-1 flex flex-col">
                     <div className="p-5 border-b border-slate-200 flex justify-between items-center">
-                        <h3 className="text-lg font-bold text-slate-800">Action Plan</h3>
+                        <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                             <ListTodo size={20} className="text-blue-600" />
+                             Action Plan
+                        </h3>
                         <div className="flex gap-2">
                              <button onClick={() => setIsTaskModalOpen(true)} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors">
                                 <Plus size={16} /> Add Task
@@ -118,7 +125,7 @@ const ExecutionTab: React.FC<ExecutionTabProps> = ({ plan }) => {
                         </div>
                     </div>
 
-                    <div className="flex-1 overflow-x-auto relative">
+                    <div className="flex-1 overflow-x-auto relative min-h-[300px]">
                         {tasks.length === 0 ? (
                              <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400">
                                 <div className="bg-slate-50 p-4 rounded-full mb-3">
@@ -203,6 +210,31 @@ const ExecutionTab: React.FC<ExecutionTabProps> = ({ plan }) => {
                                 </tbody>
                             </table>
                         )}
+                    </div>
+                </div>
+
+                {/* 1.7.3 Progress Update & Notes */}
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+                    <div className="flex justify-between items-center mb-3">
+                        <h3 className="font-bold text-slate-800">Progress Notes</h3>
+                        <button className="text-slate-500 hover:text-blue-600 p-2 rounded-full hover:bg-slate-100" title="Voice Note">
+                             <Mic size={18} />
+                        </button>
+                    </div>
+                    <div className="flex gap-4">
+                        <textarea 
+                            className="flex-1 w-full border border-slate-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none h-24 bg-slate-50"
+                            placeholder="Add a progress update note..."
+                        ></textarea>
+                        <div className="w-1/3 border border-slate-100 rounded-lg p-3 bg-slate-50 overflow-y-auto h-24">
+                            <h4 className="text-xs font-bold text-slate-500 uppercase mb-2">Recent Updates</h4>
+                            <div className="text-xs text-slate-600 space-y-2">
+                                <div className="flex items-start gap-2">
+                                     <FileAudio size={12} className="mt-0.5 text-blue-500"/>
+                                     <span>Voice note added yesterday regarding client feedback.</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
