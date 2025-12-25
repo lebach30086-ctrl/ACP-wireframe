@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import Layout from './components/Layout';
 import PlanList from './components/PlanList';
@@ -5,10 +6,11 @@ import PlanDashboard from './components/PlanDashboard';
 import PlanWizard from './components/PlanWizard';
 import CompanyList, { MOCK_COMPANIES } from './components/CompanyList';
 import CompanyDetail from './components/CompanyDetail';
+import ReportDashboard from './components/ReportDashboard';
 import { AccountPlan, Company } from './types';
 
-type ViewType = 'plan-list' | 'plan-detail' | 'company-list' | 'company-detail';
-type NavTab = 'Dashboard' | 'Company' | 'Account Planning' | 'Settings';
+type ViewType = 'plan-list' | 'plan-detail' | 'company-list' | 'company-detail' | 'reports';
+type NavTab = 'Dashboard' | 'Company' | 'Account Planning' | 'Reports' | 'Settings';
 
 function App() {
   const [view, setView] = useState<ViewType>('plan-list');
@@ -27,8 +29,11 @@ function App() {
         setView('plan-list');
         setSelectedPlan(null);
         setSelectedCompany(null);
+    } else if (tab === 'Reports') {
+        setView('reports');
+        setSelectedPlan(null);
+        setSelectedCompany(null);
     } else if (tab === 'Dashboard') {
-        // Placeholder for dashboard view, reusing plan list for now
         setView('plan-list'); 
     }
   };
@@ -60,10 +65,6 @@ function App() {
   const handleSelectCompany = (company: Company) => {
     setSelectedCompany(company);
     setView('company-detail');
-    // We intentionally do NOT change the activeTab to 'Company' here so the sidebar
-    // remains on 'Account Planning' context if the user came from there,
-    // OR we can change it to show context switch. 
-    // Let's switch context to Company for consistency with sidebar
     setActiveTab('Company'); 
   };
 
@@ -107,6 +108,10 @@ function App() {
             company={selectedCompany} 
             onBack={handleBackToCompanies} 
         />
+      )}
+
+      {view === 'reports' && (
+          <ReportDashboard />
       )}
 
       {showWizard && (

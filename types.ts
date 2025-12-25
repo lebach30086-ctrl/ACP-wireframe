@@ -1,3 +1,4 @@
+
 export interface AccountPlan {
     id: string;
     accountName: string; // This represents the Plan Name (e.g., "Global Expansion 2024")
@@ -6,7 +7,7 @@ export interface AccountPlan {
     companySegment?: 'Enterprise' | 'SME' | 'Corporate' | 'Retail'; // Synced from Company
     fiscalYear: string;
     owner: string;
-    status: 'Draft' | 'Active' | 'Review' | 'Completed';
+    status: 'Draft' | 'Pending Approval' | 'Active' | 'Needs Revision' | 'Completed';
     progress: number;
     industry: string;
     revenue: number; // Projected revenue
@@ -17,6 +18,15 @@ export interface AccountPlan {
     employees?: string;
     location?: string;
     tier?: string;
+    taxCode?: string;
+    legalRepresentative?: string;
+
+    // Date fields
+    startDate?: string;
+    endDate?: string;
+    submittedDate?: string;
+    approvedDate?: string;
+    rejectionReason?: string;
   }
 
   export interface Company {
@@ -49,6 +59,11 @@ export interface AccountPlan {
     metric: string;
     targetValue: string;
     currentValue: string;
+    // Added for Action Plan UI
+    startDate?: string;
+    endDate?: string;
+    completeDate?: string;
+    status?: string;
   }
   
   export interface Task {
@@ -57,9 +72,14 @@ export interface AccountPlan {
     title: string;
     assignee: string; // Avatar URL or Initials
     assigneeName: string;
+    assigneeEmail?: string;
     dueDate: string;
     status: 'To Do' | 'In Progress' | 'Done';
     priority: 'High' | 'Medium' | 'Low';
+    attachmentCount?: number;
+    commentCount?: number;
+    startTime?: string;
+    endTime?: string;
   }
   
   export interface Stakeholder {
@@ -70,11 +90,15 @@ export interface AccountPlan {
     influence: number; // 0-100 (X axis)
     interest: number; // 0-100 (Y axis)
     sentiment: 'Positive' | 'Neutral' | 'Negative'; // Color coding
+    department?: string;
+    email?: string;
+    phone?: string;
   }
   
   export enum PlanTab {
     OVERVIEW = 'overview',
     ANALYSIS = 'analysis',
+    WHITESPACE = 'whitespace',
     STAKEHOLDERS = 'stakeholders',
     ACTION_PLAN = 'action_plan',
     APPROVAL = 'approval'

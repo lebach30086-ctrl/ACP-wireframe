@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { 
   LayoutDashboard, 
@@ -8,7 +9,8 @@ import {
   Bell, 
   Search,
   Menu,
-  Building2
+  Building2,
+  BarChart3
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -29,8 +31,26 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab = 'Account Planning
       {/* Sidebar */}
       <aside className="w-64 bg-slate-900 text-slate-300 flex-shrink-0 hidden md:flex flex-col">
         <div className="p-4 border-b border-slate-700 flex items-center gap-3">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">S</div>
-            <span className="text-white font-semibold text-lg">SmartCRM</span>
+            <div className="w-9 h-9 relative flex items-center justify-center shrink-0">
+                <svg width="100%" height="100%" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="blueGrad" x1="0" y1="0" x2="40" y2="40">
+                            <stop offset="0%" stopColor="#60A5FA"/>
+                            <stop offset="100%" stopColor="#2563EB"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M20 0L37.32 10L20 20L2.68 10L20 0Z" fill="#3B82F6"/>
+                    <path d="M37.32 10L37.32 30L20 20L37.32 10Z" fill="#2563EB"/>
+                    <path d="M37.32 30L20 40L20 20L37.32 30Z" fill="#1D4ED8"/>
+                    <path d="M20 40L2.68 30L20 20L20 40Z" fill="#1E40AF"/>
+                    <path d="M2.68 30L2.68 10L20 20L2.68 30Z" fill="#3B82F6"/>
+                    <path d="M2.68 10L20 0L20 20L2.68 10Z" fill="#60A5FA"/>
+                    <path d="M20 7L31.2 13.5V26.5L20 33L8.8 26.5V13.5L20 7Z" fill="white"/>
+                    <circle cx="20" cy="17" r="4.5" stroke="#2563EB" strokeWidth="2.5"/>
+                    <path d="M11 30C11 25 15 21.5 20 21.5C25 21.5 29 25 29 30" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round"/>
+                </svg>
+            </div>
+            <span className="text-white font-bold text-xl tracking-tight">Mobio</span>
         </div>
 
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
@@ -52,6 +72,12 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab = 'Account Planning
                 label="Account Planning" 
                 active={activeTab === 'Account Planning'} 
                 onClick={() => handleNavClick('Account Planning')}
+            />
+            <NavItem 
+                icon={<BarChart3 size={20} />} 
+                label="Reports" 
+                active={activeTab === 'Reports'} 
+                onClick={() => handleNavClick('Reports')}
             />
             
             <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 mt-6">System</div>
