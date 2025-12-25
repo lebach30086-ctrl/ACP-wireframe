@@ -1,6 +1,36 @@
 
-import React, { useState } from 'react';
-import { Download, BarChart3, Plus, Edit2, AlertTriangle, TrendingUp, Search, Swords, Trash2, Globe, Save, X } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { 
+    Download, 
+    BarChart3, 
+    Plus, 
+    Edit2, 
+    AlertTriangle, 
+    TrendingUp, 
+    Search, 
+    Swords, 
+    Trash2, 
+    Globe, 
+    Save, 
+    X, 
+    Lightbulb, 
+    PlusCircle, 
+    Bold, 
+    Italic, 
+    List, 
+    ListOrdered, 
+    Link, 
+    Underline, 
+    AlignLeft, 
+    AlignCenter, 
+    AlignRight,
+    FileText,
+    FileSpreadsheet,
+    File,
+    UploadCloud,
+    Paperclip,
+    ExternalLink
+} from 'lucide-react';
 import { AccountPlan } from '../../types';
 import Modal from '../ui/Modal';
 
@@ -26,6 +56,26 @@ interface Risk {
     mitigation: string;
 }
 
+interface IndustryMetric {
+    id: string;
+    label: string;
+    value: string;
+}
+
+interface AttachedFile {
+    id: string;
+    name: string;
+    type: string;
+    size: string;
+}
+
+interface IndustryData {
+    industry: string;
+    metrics: IndustryMetric[];
+    insights: string;
+    files: AttachedFile[];
+}
+
 const INITIAL_MOCK_COMPETITORS: Competitor[] = [
     {
         id: '1',
@@ -49,6 +99,7 @@ const INITIAL_MOCK_COMPETITORS: Competitor[] = [
 
 const MarketTab: React.FC<MarketTabProps> = ({ plan }) => {
     const isNew = plan.isNew;
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [competitors, setCompetitors] = useState<Competitor[]>(isNew ? [] : INITIAL_MOCK_COMPETITORS);
     const [isCompModalOpen, setIsCompModalOpen] = useState(false);
     const [isSwotModalOpen, setIsSwotModalOpen] = useState(false);
@@ -56,17 +107,21 @@ const MarketTab: React.FC<MarketTabProps> = ({ plan }) => {
     const [editingCompetitorId, setEditingCompetitorId] = useState<string | null>(null);
     
     // Industry Data State
-    const [industryData, setIndustryData] = useState({
+    const [industryData, setIndustryData] = useState<IndustryData>({
         industry: isNew ? '' : 'Manufacturing & Supply Chain',
-        avgMargin: isNew ? '' : '12.5%',
-        yoyGrowth: isNew ? '' : '+4.2%',
-        trends: isNew ? [] : [
-            'Shift towards AI-driven inventory management.',
-            'Increased focus on sustainable manufacturing processes.',
-            'Consolidation of smaller logistics providers.'
+        metrics: isNew ? [] : [
+            { id: 'm1', label: 'AVG MARGIN', value: '12.5%' },
+            { id: 'm2', label: 'YOY GROWTH', value: '+4.2%' },
+            { id: 'm3', label: 'REVENUE', value: '10%' }
+        ],
+        insights: isNew ? '' : 'Shift towards AI-driven inventory management.\nIncreased focus on sustainable manufacturing processes.\nConsolidation of smaller logistics providers.',
+        files: [
+            { id: 'f1', name: 'Q4_Industry_Report.pdf', type: 'application/pdf', size: '2.4 MB' },
+            { id: 'f2', name: 'Competitor_Landscape_Analysis.xlsx', type: 'application/vnd.ms-excel', size: '1.1 MB' }
         ]
     });
-    const [industryEdit, setIndustryEdit] = useState({ ...industryData });
+
+    const [industryEdit, setIndustryEdit] = useState<IndustryData>({ ...industryData });
 
     // SWOT State
     const [swot, setSwot] = useState({
@@ -77,10 +132,10 @@ const MarketTab: React.FC<MarketTabProps> = ({ plan }) => {
     });
 
     const [swotEdit, setSwotEdit] = useState({ 
-        strengths: swot.strengths.join(' '), 
-        weaknesses: swot.weaknesses.join(' '), 
-        opportunities: swot.opportunities.join(' '), 
-        threats: swot.threats.join(' ') 
+        strengths: swot.strengths.join('. '), 
+        weaknesses: swot.weaknesses.join('. '), 
+        opportunities: swot.opportunities.join('. '), 
+        threats: swot.threats.join('. ') 
     });
 
     // Risks State
@@ -99,6 +154,38 @@ const MarketTab: React.FC<MarketTabProps> = ({ plan }) => {
         weaknesses: '',
         differentiatingFactors: ''
     });
+
+    const getFileIcon = (fileName: string) => {
+        const ext = fileName.split('.').pop()?.toLowerCase();
+        if (ext === 'pdf') return <FileText className="text-red-500" size={18} />;
+        if (['doc', 'docx'].includes(ext || '')) return <File className="text-blue-500" size={18} />;
+        if (['xls', 'xlsx', 'csv'].includes(ext || '')) return <FileSpreadsheet className="text-green-500" size={18} />;
+        return <File className="text-slate-400" size={18} />;
+    };
+
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const selectedFiles = e.target.files;
+        if (!selectedFiles) return;
+
+        const newFiles: AttachedFile[] = Array.from(selectedFiles).map(file => ({
+            id: Math.random().toString(36).substr(2, 9),
+            name: file.name,
+            type: file.type,
+            size: (file.size / 1024 / 1024).toFixed(2) + ' MB'
+        }));
+
+        setIndustryEdit(prev => ({
+            ...prev,
+            files: [...prev.files, ...newFiles]
+        }));
+    };
+
+    const removeFileFromEdit = (id: string) => {
+        setIndustryEdit(prev => ({
+            ...prev,
+            files: prev.files.filter(f => f.id !== id)
+        }));
+    };
 
     const getThreatColor = (level: string) => {
         switch(level) {
@@ -163,6 +250,32 @@ const MarketTab: React.FC<MarketTabProps> = ({ plan }) => {
         setIsIndustryModalOpen(false);
     };
 
+    const handleAddMetric = () => {
+        const newMetric: IndustryMetric = {
+            id: Date.now().toString(),
+            label: 'NEW METRIC',
+            value: '-'
+        };
+        setIndustryEdit({
+            ...industryEdit,
+            metrics: [...industryEdit.metrics, newMetric]
+        });
+    };
+
+    const handleUpdateMetric = (id: string, field: keyof IndustryMetric, val: string) => {
+        setIndustryEdit({
+            ...industryEdit,
+            metrics: industryEdit.metrics.map(m => m.id === id ? { ...m, [field]: val } : m)
+        });
+    };
+
+    const handleDeleteMetric = (id: string) => {
+        setIndustryEdit({
+            ...industryEdit,
+            metrics: industryEdit.metrics.filter(m => m.id !== id)
+        });
+    };
+
     const handleDeleteCompetitor = (id: string) => {
         setCompetitors(competitors.filter(c => c.id !== id));
     };
@@ -196,27 +309,60 @@ const MarketTab: React.FC<MarketTabProps> = ({ plan }) => {
                         <p className="text-sm font-medium">Industry data is missing</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-4">
-                             <div className="flex gap-4">
-                                <div className="p-4 bg-slate-50 rounded-lg border border-slate-100 flex-1">
-                                    <div className="text-xs text-slate-500 font-medium uppercase mb-1">Avg Margin</div>
-                                    <div className="text-2xl font-bold text-slate-800">{industryData.avgMargin}</div>
-                                </div>
-                                <div className="p-4 bg-slate-50 rounded-lg border border-slate-100 flex-1">
-                                    <div className="text-xs text-slate-500 font-medium uppercase mb-1">YOY Growth</div>
-                                    <div className="text-2xl font-bold text-green-600">{industryData.yoyGrowth}</div>
-                                </div>
-                             </div>
-                        </div>
-                        <div className="space-y-2">
-                            <h4 className="font-semibold text-slate-700 text-sm">Key Trends</h4>
-                            <ul className="space-y-2 text-sm text-slate-600 list-disc list-inside">
-                                {industryData.trends.map((trend, i) => (
-                                    <li key={i}>{trend}</li>
+                    <div className="space-y-8">
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+                            <div className="md:col-span-5 grid grid-cols-2 gap-3">
+                                {industryData.metrics.map((m) => (
+                                    <div key={m.id} className="p-4 bg-slate-50 rounded-lg border border-slate-100">
+                                        <div className="text-[10px] text-slate-800 font-black uppercase mb-1 tracking-widest">{m.label}</div>
+                                        <div className="text-2xl font-black text-slate-900">
+                                            {m.value}
+                                        </div>
+                                    </div>
                                 ))}
-                            </ul>
+                            </div>
+                            <div className="md:col-span-7 space-y-3">
+                                <h4 className="font-bold text-slate-400 text-[11px] uppercase tracking-widest flex items-center gap-2">
+                                    <Lightbulb size={14} className="text-blue-500" /> INSIGHTS
+                                </h4>
+                                <div className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap font-medium">
+                                    {industryData.insights}
+                                </div>
+                            </div>
                         </div>
+
+                        {/* File Attachments Display - Highlighted in screenshot */}
+                        {industryData.files.length > 0 && (
+                            <div className="pt-6 border-t border-slate-100">
+                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                    <Paperclip size={12} /> Supporting Documents ({industryData.files.length})
+                                </h4>
+                                <div className="flex flex-wrap gap-4">
+                                    {industryData.files.map(file => (
+                                        <div 
+                                            key={file.id} 
+                                            className="flex items-center gap-4 px-4 py-3 bg-white border border-slate-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all cursor-pointer group/file"
+                                        >
+                                            <div className="p-2 bg-slate-50 rounded-lg group-hover/file:bg-blue-50 transition-colors">
+                                                {getFileIcon(file.name)}
+                                            </div>
+                                            <div className="flex flex-col min-w-0 pr-4">
+                                                <span className="text-sm font-bold text-slate-800 truncate max-w-[180px]">{file.name}</span>
+                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter mt-0.5">{file.size}</span>
+                                            </div>
+                                            <div className="flex gap-1.5 ml-auto">
+                                                <button className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-all" title="Download">
+                                                    <Download size={16} />
+                                                </button>
+                                                <button className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-all" title="View">
+                                                    <ExternalLink size={16} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
@@ -232,10 +378,10 @@ const MarketTab: React.FC<MarketTabProps> = ({ plan }) => {
                         <button 
                             onClick={() => { 
                                 setSwotEdit({ 
-                                    strengths: swot.strengths.join(' '), 
-                                    weaknesses: swot.weaknesses.join(' '), 
-                                    opportunities: swot.opportunities.join(' '), 
-                                    threats: swot.threats.join(' ') 
+                                    strengths: swot.strengths.join('. '), 
+                                    weaknesses: swot.weaknesses.join('. '), 
+                                    opportunities: swot.opportunities.join('. '), 
+                                    threats: swot.threats.join('. ') 
                                 }); 
                                 setIsSwotModalOpen(true); 
                             }}
@@ -412,71 +558,172 @@ const MarketTab: React.FC<MarketTabProps> = ({ plan }) => {
                 isOpen={isIndustryModalOpen}
                 onClose={() => setIsIndustryModalOpen(false)}
                 title="Edit Industry & Market Analysis"
-                maxWidth="max-w-xl"
+                maxWidth="max-w-[80%]"
             >
-                <div className="space-y-4">
-                    <div className="space-y-2">
-                        <label className="text-sm font-semibold text-slate-700">Industry Name / Segment</label>
+                <div className="py-2 space-y-10">
+                    <div className="space-y-3 px-1">
+                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Industry Name / Segment</label>
                         <input 
                             type="text" 
                             value={industryEdit.industry} 
                             onChange={e => setIndustryEdit({...industryEdit, industry: e.target.value})} 
-                            className="w-full px-3 py-2 border border-neutral-300 bg-white text-slate-900 rounded-[6px] focus:ring-2 focus:ring-blue-500 outline-none text-sm" 
+                            className="w-full px-4 py-3 border border-slate-200 bg-white text-slate-900 rounded-xl font-bold text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm" 
                             placeholder="e.g. Manufacturing & Supply Chain" 
                         />
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label className="text-sm font-semibold text-slate-700">Avg Margin</label>
-                            <input 
-                                type="text" 
-                                value={industryEdit.avgMargin} 
-                                onChange={e => setIndustryEdit({...industryEdit, avgMargin: e.target.value})} 
-                                className="w-full px-3 py-2 border border-neutral-300 bg-white text-slate-900 rounded-[6px] focus:ring-2 focus:ring-blue-500 outline-none text-sm" 
-                                placeholder="e.g. 12.5%" 
-                            />
+                    {/* Dynamic Metrics Section */}
+                    <div className="space-y-6">
+                        <div className="flex justify-between items-center border-b border-slate-100 pb-3 px-1">
+                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Industry Metrics</label>
+                            <button 
+                                onClick={handleAddMetric}
+                                className="flex items-center gap-1.5 text-xs font-black text-blue-600 hover:text-blue-700 transition-colors bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100"
+                            >
+                                <PlusCircle size={14} /> ADD METRIC
+                            </button>
                         </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-semibold text-slate-700">YOY Growth</label>
-                            <input 
-                                type="text" 
-                                value={industryEdit.yoyGrowth} 
-                                onChange={e => setIndustryEdit({...industryEdit, yoyGrowth: e.target.value})} 
-                                className="w-full px-3 py-2 border border-neutral-300 bg-white text-slate-900 rounded-[6px] focus:ring-2 focus:ring-blue-500 outline-none text-sm" 
-                                placeholder="e.g. +4.2%" 
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {industryEdit.metrics.map((metric) => (
+                                <div key={metric.id} className="relative p-5 bg-slate-50/50 rounded-2xl border border-slate-100 shadow-sm group/metric">
+                                    <button 
+                                        onClick={() => handleDeleteMetric(metric.id)}
+                                        className="absolute top-2 right-2 p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover/metric:opacity-100"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                    
+                                    <div className="space-y-4 pt-2">
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter ml-1">LABEL</label>
+                                            <input 
+                                                type="text" 
+                                                value={metric.label}
+                                                onChange={(e) => handleUpdateMetric(metric.id, 'label', e.target.value)}
+                                                className="w-full px-3 py-2 border border-slate-200 bg-white text-slate-800 rounded-lg font-bold text-[11px] focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                                placeholder="e.g. AVG MARGIN"
+                                            />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter ml-1">VALUE</label>
+                                            <input 
+                                                type="text" 
+                                                value={metric.value}
+                                                onChange={(e) => handleUpdateMetric(metric.id, 'value', e.target.value)}
+                                                className="w-full px-3 py-2 border border-slate-200 bg-white text-blue-600 rounded-lg font-black text-[13px] focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                                placeholder="e.g. 12.5%"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Rich Text Editor UI for Insights */}
+                    <div className="space-y-4 px-1">
+                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                             <Lightbulb size={14} className="text-blue-500" /> INSIGHTS
+                        </label>
+                        
+                        <div className="rounded-2xl border border-slate-200 overflow-hidden shadow-sm bg-slate-50/50 transition-all focus-within:border-blue-300 focus-within:ring-4 focus-within:ring-blue-50">
+                            {/* Toolbar */}
+                            <div className="flex items-center gap-1 p-2 bg-slate-100/50 border-b border-slate-200">
+                                <button className="p-1.5 text-slate-600 hover:bg-white hover:text-blue-600 rounded transition-all" title="Bold"><Bold size={16} /></button>
+                                <button className="p-1.5 text-slate-600 hover:bg-white hover:text-blue-600 rounded transition-all" title="Italic"><Italic size={16} /></button>
+                                <button className="p-1.5 text-slate-600 hover:bg-white hover:text-blue-600 rounded transition-all" title="Underline"><Underline size={16} /></button>
+                                <div className="w-px h-5 bg-slate-200 mx-1"></div>
+                                <button className="p-1.5 text-slate-600 hover:bg-white hover:text-blue-600 rounded transition-all" title="Align Left"><AlignLeft size={16} /></button>
+                                <button className="p-1.5 text-slate-600 hover:bg-white hover:text-blue-600 rounded transition-all" title="Align Center"><AlignCenter size={16} /></button>
+                                <button className="p-1.5 text-slate-600 hover:bg-white hover:text-blue-600 rounded transition-all" title="Align Right"><AlignRight size={16} /></button>
+                                <div className="w-px h-5 bg-slate-200 mx-1"></div>
+                                <button className="p-1.5 text-slate-600 hover:bg-white hover:text-blue-600 rounded transition-all" title="Bullet List"><List size={16} /></button>
+                                <button className="p-1.5 text-slate-600 hover:bg-white hover:text-blue-600 rounded transition-all" title="Numbered List"><ListOrdered size={16} /></button>
+                                <div className="w-px h-5 bg-slate-200 mx-1"></div>
+                                <button className="p-1.5 text-slate-600 hover:bg-white hover:text-blue-600 rounded transition-all" title="Insert Link"><Link size={16} /></button>
+                            </div>
+                            
+                            {/* Editor Area */}
+                            <textarea 
+                                value={industryEdit.insights} 
+                                onChange={e => setIndustryEdit({...industryEdit, insights: e.target.value})} 
+                                className="w-full p-6 bg-white text-slate-700 outline-none text-sm min-h-[260px] font-medium transition-all" 
+                                placeholder="Type industry insights and trends here..."
                             />
                         </div>
                     </div>
 
-                    <div className="space-y-2">
-                        <label className="text-sm font-semibold text-slate-700">Key Trends (One per line)</label>
-                        <textarea 
-                            value={industryEdit.trends.join('\n')} 
-                            onChange={e => setIndustryEdit({...industryEdit, trends: e.target.value.split('\n')})} 
-                            className="w-full px-3 py-2 border border-neutral-300 bg-white text-slate-900 rounded-[6px] focus:ring-2 focus:ring-blue-500 outline-none text-sm min-h-[120px]" 
-                            placeholder="Enter trends..."
-                        />
+                    {/* File Upload Section */}
+                    <div className="space-y-4 px-1">
+                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                             <UploadCloud size={14} className="text-blue-500" /> Supporting Documents
+                        </label>
+                        
+                        <div 
+                            onClick={() => fileInputRef.current?.click()}
+                            className="border-2 border-dashed border-slate-200 bg-slate-50 hover:bg-blue-50 hover:border-blue-300 transition-all rounded-2xl p-10 flex flex-col items-center justify-center gap-3 cursor-pointer group/upload"
+                        >
+                            <input 
+                                type="file" 
+                                ref={fileInputRef} 
+                                onChange={handleFileUpload} 
+                                className="hidden" 
+                                multiple
+                                accept=".pdf,.doc,.docx,.xls,.xlsx,.csv" 
+                            />
+                            <div className="p-4 bg-white rounded-full shadow-sm text-slate-400 group-hover/upload:text-blue-600 group-hover/upload:scale-110 transition-all">
+                                <UploadCloud size={32} />
+                            </div>
+                            <div className="text-center">
+                                <p className="text-sm font-black text-slate-700">Click or drag files to upload</p>
+                                <p className="text-xs text-slate-400 font-medium mt-1">Supports PDF, Word, Excel (Max 10MB each)</p>
+                            </div>
+                        </div>
+
+                        {/* File List for Uploading */}
+                        {industryEdit.files.length > 0 && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
+                                {industryEdit.files.map(file => (
+                                    <div key={file.id} className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-xl shadow-sm group/fileitem">
+                                        <div className="flex items-center gap-3 overflow-hidden">
+                                            {getFileIcon(file.name)}
+                                            <div className="flex flex-col min-w-0">
+                                                <span className="text-xs font-bold text-slate-800 truncate">{file.name}</span>
+                                                <span className="text-[10px] text-slate-400 font-black">{file.size}</span>
+                                            </div>
+                                        </div>
+                                        <button 
+                                            onClick={(e) => { e.stopPropagation(); removeFileFromEdit(file.id); }}
+                                            className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                        >
+                                            <X size={14} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
-                    <div className="pt-4 flex justify-end gap-3 border-t border-slate-100">
+                    {/* Actions */}
+                    <div className="mt-8 pt-8 flex justify-end items-center gap-8 border-t border-slate-100">
                         <button 
                             onClick={() => setIsIndustryModalOpen(false)} 
-                            className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg font-bold text-sm"
+                            className="text-slate-600 hover:text-slate-800 text-sm font-bold transition-colors px-4"
                         >
                             Cancel
                         </button>
                         <button 
                             onClick={handleSaveIndustry} 
-                            className="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg font-bold text-sm shadow-md shadow-blue-100"
+                            className="px-12 py-3 bg-blue-600 text-white hover:bg-blue-700 rounded-xl font-black text-xs shadow-xl shadow-blue-100 flex items-center gap-2 transition-all active:scale-95 group/btn"
                         >
-                            Save Changes
+                            <Save size={20} className="transition-transform group-hover/btn:scale-110" /> Save Changes
                         </button>
                     </div>
                 </div>
             </Modal>
 
-            {/* SWOT Edit Modal - Redesigned per screenshot */}
+            {/* SWOT Edit Modal */}
             <Modal 
                 isOpen={isSwotModalOpen} 
                 onClose={() => setIsSwotModalOpen(false)} 
@@ -492,7 +739,6 @@ const MarketTab: React.FC<MarketTabProps> = ({ plan }) => {
                                 value={swotEdit.strengths} 
                                 onChange={e => setSwotEdit({...swotEdit, strengths: e.target.value})} 
                                 className="w-full p-6 border border-slate-100 bg-white text-slate-700 rounded-2xl focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none text-sm min-h-[160px] shadow-sm transition-all" 
-                                placeholder="Market Leader in APAC Strong R&D capabilities"
                             />
                         </div>
                         {/* WEAKNESSES */}
@@ -502,7 +748,6 @@ const MarketTab: React.FC<MarketTabProps> = ({ plan }) => {
                                 value={swotEdit.weaknesses} 
                                 onChange={e => setSwotEdit({...swotEdit, weaknesses: e.target.value})} 
                                 className="w-full p-6 border border-slate-100 bg-white text-slate-700 rounded-2xl focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none text-sm min-h-[160px] shadow-sm transition-all" 
-                                placeholder="Legacy IT systems High operational costs"
                             />
                         </div>
                         {/* OPPORTUNITIES */}
@@ -512,7 +757,6 @@ const MarketTab: React.FC<MarketTabProps> = ({ plan }) => {
                                 value={swotEdit.opportunities} 
                                 onChange={e => setSwotEdit({...swotEdit, opportunities: e.target.value})} 
                                 className="w-full p-6 border border-slate-100 bg-white text-slate-700 rounded-2xl focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none text-sm min-h-[160px] shadow-sm transition-all" 
-                                placeholder="Digital transformation demand Cloud migration"
                             />
                         </div>
                         {/* THREATS */}
@@ -522,7 +766,6 @@ const MarketTab: React.FC<MarketTabProps> = ({ plan }) => {
                                 value={swotEdit.threats} 
                                 onChange={e => setSwotEdit({...swotEdit, threats: e.target.value})} 
                                 className="w-full p-6 border border-slate-100 bg-white text-slate-700 rounded-2xl focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none text-sm min-h-[160px] shadow-sm transition-all" 
-                                placeholder="Aggressive startups Regulatory changes"
                             />
                         </div>
                     </div>
@@ -583,7 +826,7 @@ const MarketTab: React.FC<MarketTabProps> = ({ plan }) => {
                                     onClick={() => setCompFormData({...compFormData, threatLevel: level as any})}
                                     className={`flex-1 py-2 px-4 rounded-lg border text-sm font-bold transition-all
                                         ${compFormData.threatLevel === level 
-                                            ? (level === 'High' ? 'bg-red-600 text-white border-red-600' : level === 'Medium' ? 'bg-orange-500 text-white border-orange-500' : 'bg-green-600 text-white border-green-600')
+                                            ? (level === 'High' ? 'bg-red-600 text-white border-red-600' : level === 'Medium' ? 'bg-orange-50 text-white border-orange-500' : 'bg-green-600 text-white border-green-600')
                                             : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
                                         }`}
                                 >
@@ -599,7 +842,6 @@ const MarketTab: React.FC<MarketTabProps> = ({ plan }) => {
                             value={compFormData.strengths} 
                             onChange={e => setCompFormData({...compFormData, strengths: e.target.value})} 
                             className="w-full px-3 py-2 border border-neutral-300 bg-white text-slate-900 rounded-[6px] focus:ring-2 focus:ring-blue-500 outline-none text-sm min-h-[80px] placeholder-slate-400" 
-                            placeholder="What do they do exceptionally well?"
                         />
                     </div>
 
@@ -609,7 +851,6 @@ const MarketTab: React.FC<MarketTabProps> = ({ plan }) => {
                             value={compFormData.weaknesses} 
                             onChange={e => setCompFormData({...compFormData, weaknesses: e.target.value})} 
                             className="w-full px-3 py-2 border border-neutral-300 bg-white text-slate-900 rounded-[6px] focus:ring-2 focus:ring-blue-500 outline-none text-sm min-h-[80px] placeholder-slate-400" 
-                            placeholder="Where are they vulnerable?"
                         />
                     </div>
 
@@ -619,7 +860,6 @@ const MarketTab: React.FC<MarketTabProps> = ({ plan }) => {
                             value={compFormData.differentiatingFactors} 
                             onChange={e => setCompFormData({...compFormData, differentiatingFactors: e.target.value})} 
                             className="w-full px-3 py-2 border border-blue-200 bg-blue-50/30 text-slate-900 rounded-[6px] focus:ring-2 focus:ring-blue-500 outline-none text-sm min-h-[80px] placeholder-slate-400" 
-                            placeholder="Why do we win against them? What is our unique advantage?"
                         />
                     </div>
 
@@ -636,7 +876,7 @@ const MarketTab: React.FC<MarketTabProps> = ({ plan }) => {
                         <button 
                             onClick={handleAddCompetitor} 
                             disabled={!compFormData.name}
-                            className="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-[6px] font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-blue-100 flex items-center gap-2"
+                            className="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-[6px] font-bold text-sm shadow-md shadow-blue-100 flex items-center gap-2"
                         >
                             <Save size={16} /> {editingCompetitorId ? "Update Analysis" : "Save Competitor"}
                         </button>

@@ -117,7 +117,7 @@ const PlanDashboard: React.FC<PlanDashboardProps> = ({ plan, onBack, onUpdatePla
                         { id: PlanTab.ANALYSIS, label: 'Strategic Analysis' },
                         { id: PlanTab.WHITESPACE, label: 'White Space Analysis' },
                         { id: PlanTab.ACTION_PLAN, label: 'Action Plan & Tracking' },
-                        { id: PlanTab.APPROVAL, label: 'Approval & Budget' },
+                        { id: PlanTab.APPROVAL, label: 'Approval' },
                     ].map((tab) => (
                         <button
                             key={tab.id}
@@ -150,65 +150,67 @@ const PlanDashboard: React.FC<PlanDashboardProps> = ({ plan, onBack, onUpdatePla
                 plan={plan} 
             />
 
-            {/* Modal Edit Main Info */}
+            {/* Modal Edit Main Info - Updated with screenshot styles */}
             <Modal
                 isOpen={isEditMainInfoModalOpen}
                 onClose={() => setIsEditMainInfoModalOpen(false)}
-                title="Chỉnh sửa thông tin kế hoạch"
-                maxWidth="max-w-md"
+                title="Cập nhật kế hoạch"
+                maxWidth="max-w-lg"
             >
-                <div className="space-y-5">
+                <div className="space-y-6">
                     <div className="space-y-2">
-                        <label className="text-sm font-bold text-slate-700">Tên kế hoạch <span className="text-red-500">*</span></label>
+                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest px-1">TÊN KẾ HOẠCH <span className="text-red-500">*</span></label>
                         <input 
                             type="text" 
                             value={editForm.accountName}
                             onChange={(e) => setEditForm({...editForm, accountName: e.target.value})}
-                            className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-900 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium"
+                            className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-white text-slate-900 font-bold text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm"
                             placeholder="Nhập tên kế hoạch..."
                         />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <label className="text-sm font-bold text-slate-700">Ngày bắt đầu</label>
+                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest px-1">NGÀY BẮT ĐẦU</label>
                             <div className="relative">
-                                <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                                <Calendar size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                                 <input 
                                     type="date" 
                                     value={editForm.startDate}
                                     onChange={(e) => setEditForm({...editForm, startDate: e.target.value})}
-                                    className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-900 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium"
+                                    onClick={(e) => e.currentTarget.showPicker && e.currentTarget.showPicker()}
+                                    className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl bg-white text-slate-900 font-bold text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm"
                                 />
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-bold text-slate-700">Ngày kết thúc</label>
+                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest px-1">HẠN ĐỊNH</label>
                             <div className="relative">
-                                <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                                <Calendar size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                                 <input 
                                     type="date" 
                                     value={editForm.endDate}
                                     onChange={(e) => setEditForm({...editForm, endDate: e.target.value})}
-                                    className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-900 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium"
+                                    onClick={(e) => e.currentTarget.showPicker && e.currentTarget.showPicker()}
+                                    className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl bg-white text-slate-900 font-bold text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm"
                                 />
                             </div>
                         </div>
                     </div>
 
-                    <div className="pt-4 flex justify-end gap-3 border-t border-slate-100">
+                    <div className="pt-8 flex justify-end items-center gap-8">
                         <button 
                             onClick={() => setIsEditMainInfoModalOpen(false)}
-                            className="px-5 py-2 text-slate-600 font-bold text-sm hover:bg-slate-100 rounded-lg transition-colors"
+                            className="text-slate-600 hover:text-slate-800 text-sm font-bold transition-colors px-4"
                         >
                             Hủy
                         </button>
                         <button 
                             onClick={handleSaveMainInfo}
                             disabled={!editForm.accountName.trim()}
-                            className="px-8 py-2 bg-blue-600 text-white font-bold text-sm rounded-lg hover:bg-blue-700 transition-all shadow-md shadow-blue-100 disabled:opacity-50 flex items-center gap-2"
+                            className="px-10 py-3 bg-blue-600 text-white font-black text-xs rounded-xl hover:bg-blue-700 transition-all shadow-xl shadow-blue-100 disabled:opacity-50 flex items-center gap-2"
                         >
-                            <Save size={16} /> Lưu thay đổi
+                            <Save size={20} /> Lưu thay đổi
                         </button>
                     </div>
                 </div>
