@@ -10,9 +10,10 @@ import {
     Building, 
     LayoutGrid, 
     Table as TableIcon,
-    MoreHorizontal,
     Edit2,
-    Trash2
+    Trash2,
+    Save,
+    ChevronDown
 } from 'lucide-react';
 import Modal from '../ui/Modal';
 
@@ -42,7 +43,8 @@ const INITIAL_MOCK_STAKEHOLDERS: Stakeholder[] = [
         interest: 15, 
         sentiment: 'Negative',
         department: 'Procurement',
-        email: 'david.lee@tmz-investment.com'
+        email: 'david.lee@tmz-investment.com',
+        phone: '+84 902 345 678'
     },
     { 
         id: '3', 
@@ -53,7 +55,8 @@ const INITIAL_MOCK_STAKEHOLDERS: Stakeholder[] = [
         interest: 40, 
         sentiment: 'Positive',
         department: 'Technology',
-        email: 'ben.novak@tmz-investment.com'
+        email: 'ben.novak@tmz-investment.com',
+        phone: '+84 903 456 789'
     },
     { 
         id: '4', 
@@ -64,41 +67,99 @@ const INITIAL_MOCK_STAKEHOLDERS: Stakeholder[] = [
         interest: 30, 
         sentiment: 'Neutral',
         department: 'Sales',
-        email: 'carla.santos@tmz-investment.com'
+        email: 'carla.santos@tmz-investment.com',
+        phone: '+84 904 567 890'
     },
+];
+
+// Mock Stakeholder Profiles to select from
+const STAKEHOLDER_PROFILES = [
+    { name: 'Alex Rivera', title: 'CEO', department: 'Executive', email: 'alex.rivera@tmz-investment.com', phone: '+84 901 234 567' },
+    { name: 'David Lee', title: 'Head of Procurement', department: 'Procurement', email: 'david.lee@tmz-investment.com', phone: '+84 902 345 678' },
+    { name: 'Ben Novak', title: 'CTO', department: 'Technology', email: 'ben.novak@tmz-investment.com', phone: '+84 903 456 789' },
+    { name: 'Carla Santos', title: 'VP of Sales', department: 'Sales', email: 'carla.santos@tmz-investment.com', phone: '+84 904 567 890' },
+    { name: 'Mai Nguyen', title: 'CFO', department: 'Finance', email: 'mai.nguyen@tmz-investment.com', phone: '+84 905 678 901' },
+    { name: 'Minh Hoang', title: 'IT Manager', department: 'IT Department', email: 'minh.hoang@tmz-investment.com', phone: '+84 906 789 012' },
 ];
 
 const StrategyTab: React.FC<StrategyTabProps> = ({ plan }) => {
     const isNew = plan.isNew;
     const [stakeholders, setStakeholders] = useState<Stakeholder[]>(isNew ? [] : INITIAL_MOCK_STAKEHOLDERS);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingStakeholderId, setEditingStakeholderId] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedStakeholderId, setSelectedStakeholderId] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<'map' | 'table'>('map');
     
-    // New Stakeholder Form
-    const [newStakeholder, setNewStakeholder] = useState<Partial<Stakeholder>>({
-        name: '', title: '', role: 'Influencer', influence: 50, interest: 50, sentiment: 'Neutral', department: ''
+    // Stakeholder Form State
+    const [formData, setFormData] = useState<Partial<Stakeholder>>({
+        name: '', title: '', role: 'Influencer', influence: 50, interest: 50, sentiment: 'Neutral', department: '', email: '', phone: ''
     });
 
-    const handleAddStakeholder = () => {
-        if (newStakeholder.name) {
-            const sh: Stakeholder = {
-                id: Date.now().toString(),
-                name: newStakeholder.name!,
-                title: newStakeholder.title || '',
-                role: newStakeholder.role as any,
-                influence: newStakeholder.influence || 50,
-                interest: newStakeholder.interest || 50,
-                sentiment: newStakeholder.sentiment as any || 'Neutral',
-                department: newStakeholder.department,
-                email: newStakeholder.email,
-                phone: newStakeholder.phone
-            };
-            setStakeholders([...stakeholders, sh]);
-            setIsModalOpen(false);
-            setNewStakeholder({ name: '', title: '', role: 'Influencer', influence: 50, interest: 50, sentiment: 'Neutral' });
+    const handleSaveStakeholder = () => {
+        if (formData.name) {
+            if (editingStakeholderId) {
+                // Update existing
+                setStakeholders(stakeholders.map(s => 
+                    s.id === editingStakeholderId 
+                    ? { ...s, ...formData } as Stakeholder 
+                    : s
+                ));
+            } else {
+                // Add new
+                const sh: Stakeholder = {
+                    id: Date.now().toString(),
+                    name: formData.name!,
+                    title: formData.title || '',
+                    role: formData.role as any,
+                    influence: formData.influence || 50,
+                    interest: formData.interest || 50,
+                    sentiment: formData.sentiment as any || 'Neutral',
+                    department: formData.department,
+                    email: formData.email,
+                    phone: formData.phone
+                };
+                setStakeholders([...stakeholders, sh]);
+            }
+            handleCloseModal();
         }
+    };
+
+    const handleProfileSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const selectedName = e.target.value;
+        const profile = STAKEHOLDER_PROFILES.find(p => p.name === selectedName);
+        
+        if (profile) {
+            setFormData({
+                ...formData,
+                name: profile.name,
+                title: profile.title,
+                department: profile.department,
+                email: profile.email,
+                phone: profile.phone
+            });
+        } else {
+            setFormData({ ...formData, name: selectedName });
+        }
+    };
+
+    const handleEditStakeholder = (sh: Stakeholder, e: React.MouseEvent) => {
+        e.stopPropagation();
+        setEditingStakeholderId(sh.id);
+        setFormData({ ...sh });
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setEditingStakeholderId(null);
+        setFormData({ name: '', title: '', role: 'Influencer', influence: 50, interest: 50, sentiment: 'Neutral', department: '', email: '', phone: '' });
+    };
+
+    const handleDeleteStakeholder = (id: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        setStakeholders(stakeholders.filter(s => s.id !== id));
+        if (selectedStakeholderId === id) setSelectedStakeholderId(null);
     };
 
     const getSentimentColor = (sentiment: string) => {
@@ -124,6 +185,13 @@ const StrategyTab: React.FC<StrategyTabProps> = ({ plan }) => {
             case 'Champion': return 'bg-green-50 text-green-700 border-green-100';
             default: return 'bg-slate-50 text-slate-600 border-slate-200';
         }
+    };
+
+    const getProgressColor = (val: number) => {
+        if (val > 80) return 'bg-green-500';
+        if (val >= 50) return 'bg-blue-600';
+        if (val >= 30) return 'bg-orange-500';
+        return 'bg-red-500';
     };
 
     const filteredStakeholders = stakeholders.filter(s => 
@@ -185,7 +253,16 @@ const StrategyTab: React.FC<StrategyTabProps> = ({ plan }) => {
                                                 <div className="text-xs text-slate-500 font-medium">{person.title}</div>
                                             </div>
                                         </div>
-                                        <div className={`w-2.5 h-2.5 rounded-full mt-1 ${getSentimentColor(person.sentiment)} shadow-sm`}></div>
+                                        <div className="flex items-center gap-2">
+                                            <button 
+                                                onClick={(e) => handleEditStakeholder(person, e)}
+                                                className="p-1 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-all opacity-0 group-hover:opacity-100"
+                                                title="Edit Stakeholder"
+                                            >
+                                                <Edit2 size={14} />
+                                            </button>
+                                            <div className={`w-2.5 h-2.5 rounded-full ${getSentimentColor(person.sentiment)} shadow-sm`}></div>
+                                        </div>
                                     </div>
                                     
                                     <div className="mt-3 flex flex-wrap gap-2 pl-[52px]">
@@ -220,32 +297,26 @@ const StrategyTab: React.FC<StrategyTabProps> = ({ plan }) => {
                 {/* Influence Map / Table View */}
                 <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm h-[700px] flex flex-col relative">
                      <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white z-20">
-                         <div className="flex items-center gap-4">
-                            <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                                <Users size={20} className="text-purple-600" />
-                                {viewMode === 'map' ? 'Influence Map' : 'Stakeholder Details'}
-                            </h3>
-                            
-                            {/* View Switcher */}
-                            <div className="flex bg-slate-100 p-1 rounded-lg ml-2">
-                                <button 
-                                    onClick={() => setViewMode('map')}
-                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition-all ${viewMode === 'map' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                                >
-                                    <LayoutGrid size={14} /> Map
-                                </button>
-                                <button 
-                                    onClick={() => setViewMode('table')}
-                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition-all ${viewMode === 'table' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                                >
-                                    <TableIcon size={14} /> Table
-                                </button>
-                            </div>
-                         </div>
-                         
-                         <button className="bg-slate-50 hover:bg-slate-100 p-2 rounded-lg text-slate-500 transition-colors">
-                             <MoreHorizontal size={18} />
-                         </button>
+                        <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <Users size={20} className="text-purple-600" />
+                            {viewMode === 'map' ? 'Influence Map' : 'Stakeholder Details'}
+                        </h3>
+                        
+                        {/* View Switcher */}
+                        <div className="flex bg-slate-100 p-1 rounded-lg">
+                            <button 
+                                onClick={() => setViewMode('map')}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition-all ${viewMode === 'map' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                            >
+                                <LayoutGrid size={14} /> Map
+                            </button>
+                            <button 
+                                onClick={() => setViewMode('table')}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition-all ${viewMode === 'table' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                            >
+                                <TableIcon size={14} /> Table
+                            </button>
+                        </div>
                     </div>
                     
                     {viewMode === 'map' ? (
@@ -357,7 +428,7 @@ const StrategyTab: React.FC<StrategyTabProps> = ({ plan }) => {
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
                                                     <div className="flex-1 h-1.5 min-w-[60px] bg-slate-100 rounded-full overflow-hidden">
-                                                        <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${s.influence}%` }}></div>
+                                                        <div className={`h-full rounded-full transition-all duration-500 ${getProgressColor(s.influence)}`} style={{ width: `${s.influence}%` }}></div>
                                                     </div>
                                                     <span className="text-xs font-bold text-slate-600">{s.influence}%</span>
                                                 </div>
@@ -365,17 +436,25 @@ const StrategyTab: React.FC<StrategyTabProps> = ({ plan }) => {
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
                                                     <div className="flex-1 h-1.5 min-w-[60px] bg-slate-100 rounded-full overflow-hidden">
-                                                        <div className="h-full bg-blue-500 rounded-full" style={{ width: `${s.interest}%` }}></div>
+                                                        <div className={`h-full rounded-full transition-all duration-500 ${getProgressColor(s.interest)}`} style={{ width: `${s.interest}%` }}></div>
                                                     </div>
                                                     <span className="text-xs font-bold text-slate-600">{s.interest}%</span>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex justify-end gap-1">
-                                                    <button className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-all">
+                                                    <button 
+                                                        onClick={(e) => handleEditStakeholder(s, e)}
+                                                        className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-all"
+                                                        title="Chỉnh sửa Stakeholder"
+                                                    >
                                                         <Edit2 size={14} />
                                                     </button>
-                                                    <button className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-all">
+                                                    <button 
+                                                        onClick={(e) => handleDeleteStakeholder(s.id, e)}
+                                                        className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-all"
+                                                        title="Xóa Stakeholder"
+                                                    >
                                                         <Trash2 size={14} />
                                                     </button>
                                                 </div>
@@ -389,106 +468,121 @@ const StrategyTab: React.FC<StrategyTabProps> = ({ plan }) => {
                 </div>
             </div>
 
-            {/* Stakeholder Modal */}
-            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Add Stakeholder">
-                <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label className="text-sm font-semibold text-slate-700">Full Name</label>
-                            <input 
-                                type="text" 
-                                value={newStakeholder.name} 
-                                onChange={e => setNewStakeholder({...newStakeholder, name: e.target.value})} 
-                                className="w-full px-3 py-2.5 border border-slate-200 bg-slate-50 text-slate-900 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" 
-                                placeholder="e.g. Alex Rivera" 
-                            />
-                        </div>
-                         <div className="space-y-2">
-                            <label className="text-sm font-semibold text-slate-700">Job Title</label>
-                            <input 
-                                type="text" 
-                                value={newStakeholder.title} 
-                                onChange={e => setNewStakeholder({...newStakeholder, title: e.target.value})} 
-                                className="w-full px-3 py-2.5 border border-slate-200 bg-slate-50 text-slate-900 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" 
-                                placeholder="e.g. CEO" 
-                            />
-                        </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label className="text-sm font-semibold text-slate-700">Department</label>
-                            <div className="relative">
-                                <Building className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
-                                <input 
-                                    type="text" 
-                                    value={newStakeholder.department} 
-                                    onChange={e => setNewStakeholder({...newStakeholder, department: e.target.value})} 
-                                    className="w-full pl-9 pr-3 py-2.5 border border-slate-200 bg-slate-50 text-slate-900 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" 
-                                    placeholder="Executive" 
-                                />
-                            </div>
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-semibold text-slate-700">Classification (Role)</label>
+            {/* Stakeholder Modal - Updated structure with single column layout for major info */}
+            <Modal 
+                isOpen={isModalOpen} 
+                onClose={handleCloseModal} 
+                title={editingStakeholderId ? "Cập nhật Stakeholder" : "Add Stakeholder"}
+            >
+                <div className="space-y-5">
+                    {/* Row 1: Full Name - Spans full width */}
+                    <div className="space-y-1.5">
+                        <label className="text-[13px] font-semibold text-slate-700">Full Name</label>
+                        <div className="relative">
                             <select 
-                                value={newStakeholder.role} 
-                                onChange={e => setNewStakeholder({...newStakeholder, role: e.target.value as any})} 
-                                className="w-full px-3 py-2.5 border border-slate-200 bg-slate-50 text-slate-900 rounded-lg outline-none text-sm font-medium"
+                                value={formData.name} 
+                                onChange={handleProfileSelect} 
+                                className="w-full px-3 py-2.5 border border-slate-200 bg-white text-slate-900 rounded-lg outline-none text-sm appearance-none focus:ring-2 focus:ring-blue-500 shadow-sm"
                             >
-                                <option value="Decision Maker">Decision Maker</option>
-                                <option value="Influencer">Influencer</option>
-                                <option value="Champion">Champion</option>
-                                <option value="Blocker">Blocker</option>
-                                <option value="User">User</option>
+                                <option value="">Chọn hồ sơ...</option>
+                                {STAKEHOLDER_PROFILES.map((p, idx) => (
+                                    <option key={idx} value={p.name}>{p.name}</option>
+                                ))}
                             </select>
+                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
                         </div>
                     </div>
 
+                    {/* Row 2: Job Title - Spans full width */}
+                    <div className="space-y-1.5">
+                        <label className="text-[13px] font-semibold text-slate-700">Job Title</label>
+                        <input 
+                            type="text" 
+                            value={formData.title} 
+                            onChange={e => setFormData({...formData, title: e.target.value})} 
+                            className="w-full px-3 py-2.5 border border-slate-200 bg-white text-slate-900 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm shadow-sm" 
+                            placeholder="e.g. CEO" 
+                        />
+                    </div>
+                    
+                    {/* Row 3: Department - Spans full width */}
+                    <div className="space-y-1.5">
+                        <label className="text-[13px] font-semibold text-slate-700">Department</label>
+                        <div className="relative">
+                            <Building className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                            <input 
+                                type="text" 
+                                value={formData.department} 
+                                onChange={e => setFormData({...formData, department: e.target.value})} 
+                                className="w-full pl-9 pr-3 py-2.5 border border-slate-200 bg-white text-slate-900 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm shadow-sm" 
+                                placeholder="Executive" 
+                            />
+                        </div>
+                    </div>
+
+                    {/* Row 4: Email & Phone - Shared line (2 cols) */}
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label className="text-sm font-semibold text-slate-700">Email</label>
+                        <div className="space-y-1.5">
+                            <label className="text-[13px] font-semibold text-slate-700">Email</label>
                             <input 
                                 type="email" 
-                                value={newStakeholder.email} 
-                                onChange={e => setNewStakeholder({...newStakeholder, email: e.target.value})} 
-                                className="w-full px-3 py-2.5 border border-slate-200 bg-slate-50 text-slate-900 rounded-lg outline-none text-sm" 
+                                value={formData.email} 
+                                onChange={e => setFormData({...formData, email: e.target.value})} 
+                                className="w-full px-3 py-2.5 border border-slate-200 bg-white text-slate-900 rounded-lg outline-none text-sm shadow-sm" 
                                 placeholder="email@company.com" 
                             />
                         </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-semibold text-slate-700">Phone</label>
+                        <div className="space-y-1.5">
+                            <label className="text-[13px] font-semibold text-slate-700">Phone</label>
                             <input 
                                 type="text" 
-                                value={newStakeholder.phone} 
-                                onChange={e => setNewStakeholder({...newStakeholder, phone: e.target.value})} 
-                                className="w-full px-3 py-2.5 border border-slate-200 bg-slate-50 text-slate-900 rounded-lg outline-none text-sm" 
+                                value={formData.phone} 
+                                onChange={e => setFormData({...formData, phone: e.target.value})} 
+                                className="w-full px-3 py-2.5 border border-slate-200 bg-white text-slate-900 rounded-lg outline-none text-sm shadow-sm" 
                                 placeholder="+84 ..." 
                             />
                         </div>
                     </div>
 
+                    {/* Row 5: Classification (Role) - Spans full width */}
+                    <div className="space-y-1.5">
+                        <label className="text-[13px] font-semibold text-slate-700">Classification (Role)</label>
+                        <select 
+                            value={formData.role} 
+                            onChange={e => setFormData({...formData, role: e.target.value as any})} 
+                            className="w-full px-3 py-2.5 border border-slate-200 bg-white text-slate-900 rounded-lg outline-none text-sm font-medium shadow-sm"
+                        >
+                            <option value="Decision Maker">Decision Maker</option>
+                            <option value="Influencer">Influencer</option>
+                            <option value="Champion">Champion</option>
+                            <option value="Blocker">Blocker</option>
+                            <option value="User">User</option>
+                        </select>
+                    </div>
+
+                    {/* Row 6: Influence & Support sliders */}
                     <div className="grid grid-cols-2 gap-6 pt-2">
                         <div className="space-y-2">
                             <label className="text-sm font-semibold text-slate-700">Influence (X: 0-100)</label>
-                            <input type="range" min="0" max="100" value={newStakeholder.influence} onChange={e => setNewStakeholder({...newStakeholder, influence: parseInt(e.target.value)})} className="w-full accent-blue-600" />
+                            <input type="range" min="0" max="100" value={formData.influence} onChange={e => setFormData({...formData, influence: parseInt(e.target.value)})} className="w-full accent-blue-600" />
                             <div className="flex justify-between text-[10px] text-slate-500 font-bold uppercase tracking-wider">
                                 <span>Low</span>
-                                <span className="text-blue-600 bg-blue-50 px-2 rounded-full">{newStakeholder.influence}%</span>
+                                <span className="text-blue-600 bg-blue-50 px-2 rounded-full">{formData.influence}%</span>
                                 <span>High</span>
                             </div>
                         </div>
                         <div className="space-y-2">
                             <label className="text-sm font-semibold text-slate-700">Support Level (Y: 0-100)</label>
-                            <input type="range" min="0" max="100" value={newStakeholder.interest} onChange={e => setNewStakeholder({...newStakeholder, interest: parseInt(e.target.value)})} className="w-full accent-blue-600" />
+                            <input type="range" min="0" max="100" value={formData.interest} onChange={e => setFormData({...formData, interest: parseInt(e.target.value)})} className="w-full accent-blue-600" />
                             <div className="flex justify-between text-[10px] text-slate-500 font-bold uppercase tracking-wider">
                                 <span>Blocker</span>
-                                <span className="text-blue-600 bg-blue-50 px-2 rounded-full">{newStakeholder.interest}%</span>
+                                <span className="text-blue-600 bg-blue-50 px-2 rounded-full">{formData.interest}%</span>
                                 <span>Supporter</span>
                             </div>
                         </div>
                     </div>
 
+                    {/* Row 7: Sentiment */}
                     <div className="space-y-2">
                         <label className="text-sm font-semibold text-slate-700">Current Relationship Sentiment</label>
                         <div className="flex gap-4">
@@ -498,8 +592,8 @@ const StrategyTab: React.FC<StrategyTabProps> = ({ plan }) => {
                                         type="radio" 
                                         name="sentiment" 
                                         value={s} 
-                                        checked={newStakeholder.sentiment === s} 
-                                        onChange={() => setNewStakeholder({...newStakeholder, sentiment: s as any})}
+                                        checked={formData.sentiment === s} 
+                                        onChange={() => setFormData({...formData, sentiment: s as any})}
                                         className="w-4 h-4 text-blue-600 focus:ring-blue-500"
                                     />
                                     <span className={`text-sm font-bold ${s === 'Positive' ? 'text-green-600' : s === 'Negative' ? 'text-red-600' : 'text-slate-600'}`}>{s}</span>
@@ -510,16 +604,17 @@ const StrategyTab: React.FC<StrategyTabProps> = ({ plan }) => {
 
                     <div className="pt-6 flex justify-end gap-3 border-t border-slate-100">
                         <button 
-                            onClick={() => setIsModalOpen(false)} 
+                            onClick={handleCloseModal} 
                             className="px-6 py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg font-bold text-sm transition-colors"
                         >
                             Cancel
                         </button>
                         <button 
-                            onClick={handleAddStakeholder} 
-                            className="px-8 py-2.5 bg-blue-600 text-white hover:bg-blue-700 rounded-lg font-bold text-sm shadow-md shadow-blue-100 transition-all active:scale-95"
+                            onClick={handleSaveStakeholder} 
+                            className="px-8 py-2.5 bg-blue-600 text-white hover:bg-blue-700 rounded-lg font-bold text-sm shadow-md shadow-blue-100 transition-all active:scale-95 flex items-center gap-2"
                         >
-                            Save Stakeholder
+                            {editingStakeholderId ? <Save size={18} /> : null}
+                            {editingStakeholderId ? "Cập nhật" : "Save Stakeholder"}
                         </button>
                     </div>
                 </div>

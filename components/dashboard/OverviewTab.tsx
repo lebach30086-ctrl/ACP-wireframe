@@ -2,11 +2,9 @@
 import React, { useState } from 'react';
 import { 
     ResponsiveContainer, 
-    AreaChart, 
-    Area, 
-    XAxis, 
-    YAxis, 
-    CartesianGrid, 
+    PieChart, 
+    Pie, 
+    Cell,
     Tooltip
 } from 'recharts';
 import { 
@@ -22,6 +20,8 @@ import {
     X, 
     CheckSquare, 
     Check,
+    // Add CheckCircle2 to imports
+    CheckCircle2,
     AlertTriangle,
     ChevronDown,
     ChevronUp,
@@ -32,21 +32,26 @@ import {
     Clock,
     CircleDashed,
     XCircle,
-    Activity
+    Activity,
+    Briefcase,
+    TrendingUp,
+    ChevronRight,
+    ArrowUpRight
 } from 'lucide-react';
-import { AccountPlan } from '../../types';
+import { AccountPlan, PlanTab } from '../../types';
 import Modal from '../ui/Modal';
 
 interface OverviewTabProps {
     plan: AccountPlan;
     onUpdatePlan: (fields: Partial<AccountPlan>) => void;
+    onTabChange?: (tab: PlanTab) => void;
 }
 
 const REVENUE_DATA = [
     { month: 'Q1', actual: 120, target: 150 },
     { month: 'Q2', actual: 180, target: 160 },
     { month: 'Q3', actual: 240, target: 200 },
-    { month: 'Q4', actual: null, target: 300 }, // Projected
+    { month: 'Q4', actual: 0, target: 300 }, // Projected
 ];
 
 interface FinancialRecord {
@@ -60,6 +65,16 @@ interface FinancialRecord {
     workingCapitalTurnover: string;
     roa: string;
     roe: string;
+}
+
+interface Opportunity {
+    id: string;
+    name: string;
+    productLine: string;
+    product: string;
+    stage: string;
+    status: 'Open' | 'Won' | 'Lost';
+    value: string;
 }
 
 const INITIAL_FINANCIAL_RECORDS: FinancialRecord[] = [
@@ -101,7 +116,37 @@ const INITIAL_FINANCIAL_RECORDS: FinancialRecord[] = [
     }
 ];
 
-const OverviewTab: React.FC<OverviewTabProps> = ({ plan, onUpdatePlan }) => {
+const MOCK_OPPORTUNITIES: Opportunity[] = [
+    {
+        id: 'opp1',
+        name: 'Gói thấu chi Q3 - Digital Expansion',
+        productLine: 'CREDIT',
+        product: 'Vay thấu chi doanh nghiệp',
+        stage: 'NEGOTIATION',
+        status: 'Open',
+        value: '$450,000'
+    },
+    {
+        id: 'opp2',
+        name: 'Dịch vụ trả lương Mobio Enterprise',
+        productLine: 'DEPOSIT',
+        product: 'Payroll Smart 2.0',
+        stage: 'PROPOSAL',
+        status: 'Open',
+        value: '$120,000'
+    },
+    {
+        id: 'opp3',
+        name: 'Hợp đồng ngoại hối Forward 6M',
+        productLine: 'GLOBAL MARKETS',
+        product: 'FX Spot & Forward',
+        stage: 'QUALIFICATION',
+        status: 'Open',
+        value: '$850,000'
+    }
+];
+
+const OverviewTab: React.FC<OverviewTabProps> = ({ plan, onUpdatePlan, onTabChange }) => {
     const isNew = plan.isNew;
     const [isProfileExpanded, setIsProfileExpanded] = useState(true);
     
@@ -158,13 +203,13 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ plan, onUpdatePlan }) => {
         if (isEditingFinance) {
             return (
                 <div className="flex items-center py-1.5">
-                    <label className="w-1/3 text-[11px] font-bold text-slate-500 uppercase">{label}</label>
+                    <label className="w-1/3 text-[13px] font-medium text-slate-600">{label}</label>
                     <div className="flex-1">
                         <input 
                             type="text" 
                             value={value}
                             onChange={(e) => updateFinancialRecord(field, e.target.value)}
-                            className="w-full px-3 py-1.5 border border-slate-200 rounded-lg bg-white text-slate-800 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-white text-slate-900 text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"
                         />
                     </div>
                 </div>
@@ -172,9 +217,9 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ plan, onUpdatePlan }) => {
         }
 
         return (
-            <div className="flex justify-between items-center py-2 border-b border-slate-50 last:border-0">
-                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-tight">{label}</span>
-                <span className="font-bold text-slate-800 text-xs text-right">{value || '--'}</span>
+            <div className="flex justify-between items-center py-3 border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors px-1 -mx-1 rounded">
+                <span className="text-[13px] text-slate-500 font-medium">{label}</span>
+                <span className="font-bold text-slate-800 text-[13px] text-right">{value || '--'}</span>
             </div>
         );
     };
@@ -187,6 +232,26 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ plan, onUpdatePlan }) => {
     };
     const totalTasks = taskStats.completed + taskStats.inProgress + taskStats.toDo + taskStats.overdue;
     const overallProgress = Math.round((taskStats.completed / totalTasks) * 100);
+
+    const getStageColor = (stage: string) => {
+        switch(stage) {
+            case 'QUALIFICATION': return 'bg-slate-100 text-slate-600 border-slate-200';
+            case 'PROPOSAL': return 'bg-blue-50 text-blue-600 border-blue-100';
+            case 'NEGOTIATION': return 'bg-purple-50 text-purple-600 border-purple-100';
+            default: return 'bg-slate-50 text-slate-500 border-slate-100';
+        }
+    };
+
+    // Calculate Donut Data for Revenue
+    const totalTarget = REVENUE_DATA.reduce((acc, curr) => acc + curr.target, 0);
+    const totalActual = REVENUE_DATA.reduce((acc, curr) => acc + curr.actual, 0);
+    const revenueGap = Math.max(0, totalTarget - totalActual);
+    const revenueProgressPercent = Math.round((totalActual / totalTarget) * 100);
+
+    const donutData = [
+        { name: 'Actual', value: totalActual, color: '#3b82f6' },
+        { name: 'Gap', value: revenueGap, color: '#f1f5f9' },
+    ];
 
     return (
         <div className="grid grid-cols-12 gap-6 animate-fade-in">
@@ -208,6 +273,10 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ plan, onUpdatePlan }) => {
                     
                     {isProfileExpanded && (
                         <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
+                            <div className="flex justify-between items-center pb-2 border-b border-slate-50">
+                                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-tight">Account</span>
+                                <span className="font-bold text-blue-600 text-[13px]">{plan.companyName}</span>
+                            </div>
                             <div className="flex justify-between items-center pb-2 border-b border-slate-50">
                                 <span className="text-[11px] font-bold text-slate-400 uppercase tracking-tight">Industry</span>
                                 <span className="font-bold text-slate-800 text-[13px]">{plan.industry || 'Hospitality'}</span>
@@ -449,14 +518,18 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ plan, onUpdatePlan }) => {
                             </button>
                         </div>
                         
-                        <div className="space-y-1">
+                        <div className="space-y-0.5">
                             {currentRecord ? (
                                 <>
                                     <FinancialField label="Loại báo cáo" field="reportType" value={currentRecord.reportType} />
                                     <FinancialField label="Tổng doanh thu (VNĐ)" field="revenue" value={currentRecord.revenue} />
                                     <FinancialField label="Tổng tài sản (VNĐ)" field="assets" value={currentRecord.assets} />
                                     <FinancialField label="Vốn chủ sở hữu (VNĐ)" field="equity" value={currentRecord.equity} />
+                                    <FinancialField label="Lợi nhuận sau thuế (VNĐ)" field="netProfit" value={currentRecord.netProfit} />
+                                    <FinancialField label="Tổng nợ vay tại các TCTD (VNĐ)" field="creditDebt" value={currentRecord.creditDebt} />
+                                    <FinancialField label="Vòng quay VLĐ" field="workingCapitalTurnover" value={currentRecord.workingCapitalTurnover} />
                                     <FinancialField label="ROA (%)" field="roa" value={currentRecord.roa} />
+                                    <FinancialField label="ROE (%)" field="roe" value={currentRecord.roe} />
                                 </>
                             ) : (
                                 <div className="p-8 text-center text-slate-300 text-xs font-bold italic">
@@ -476,7 +549,12 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ plan, onUpdatePlan }) => {
                          <h3 className="text-lg font-bold text-slate-800">
                              Action Plan Progress
                          </h3>
-                         <button className="text-[11px] font-black text-blue-600 uppercase hover:underline">VIEW DETAILS</button>
+                         <button 
+                            onClick={() => onTabChange?.(PlanTab.ACTION_PLAN)}
+                            className="text-[11px] font-black text-blue-600 uppercase hover:underline"
+                        >
+                            VIEW DETAILS
+                        </button>
                     </div>
 
                     {/* Overall Plan Progress Box */}
@@ -588,49 +666,150 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ plan, onUpdatePlan }) => {
                     </div>
                 </div>
 
-                {/* Revenue Performance */}
-                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm min-h-[360px] flex flex-col relative group">
-                    <div className="flex justify-between items-center mb-8">
+                {/* Revenue Performance - Donut Chart Replacement */}
+                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm min-h-[360px] relative group">
+                    <div className="flex justify-between items-center mb-4">
                         <div>
                             <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
                                 <DollarSign size={20} className="text-green-600" />
                                 Revenue Performance
                             </h3>
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-tight mt-1">Actual vs Target (k USD)</p>
+                            <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mt-1">Actual vs Target Summary (k USD)</p>
                         </div>
-                        {!isNew && (
-                            <div className="flex gap-4">
-                                <div className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                                    <span className="w-2.5 h-2.5 bg-blue-500 rounded-full"></span> ACTUAL
-                                </div>
-                                <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                    <span className="w-2.5 h-2.5 bg-slate-200 rounded-full"></span> TARGET
-                                </div>
-                            </div>
-                        )}
+                        <div className="flex flex-col items-end">
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">TOTAL GOAL</span>
+                            <span className="text-xl font-black text-slate-800">${totalTarget}k</span>
+                        </div>
                     </div>
                     
-                    <div className="flex-1">
-                        <div className="h-64">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center mt-4">
+                        <div className="relative h-60 w-full flex items-center justify-center">
                             <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={REVENUE_DATA}>
-                                    <defs>
-                                        <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2}/>
-                                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                                        </linearGradient>
-                                    </defs>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                    <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 11, fontWeight: 700}} />
-                                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 11, fontWeight: 700}} />
+                                <PieChart>
+                                    <Pie
+                                        data={donutData}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={65}
+                                        outerRadius={90}
+                                        paddingAngle={4}
+                                        dataKey="value"
+                                        stroke="none"
+                                        startAngle={90}
+                                        endAngle={-270}
+                                    >
+                                        {donutData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.color} />
+                                        ))}
+                                    </Pie>
                                     <Tooltip 
-                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 / 0.1)', fontSize: '12px' }}
+                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 / 0.1)', fontSize: '11px', fontWeight: 'bold' }}
                                     />
-                                    <Area type="monotone" dataKey="actual" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorActual)" />
-                                    <Area type="monotone" dataKey="target" stroke="#e2e8f0" strokeWidth={2} strokeDasharray="5 5" fill="none" />
-                                </AreaChart>
+                                </PieChart>
                             </ResponsiveContainer>
+                            {/* Center Value */}
+                            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                <span className="text-3xl font-black text-blue-600 leading-none">{revenueProgressPercent}%</span>
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">ACHIEVED</span>
+                            </div>
                         </div>
+
+                        <div className="space-y-6">
+                            <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100 flex items-center gap-4 group/item hover:bg-blue-50/30 transition-colors">
+                                <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-100 shrink-0">
+                                    <CheckCircle2 size={20} />
+                                </div>
+                                <div className="flex-1">
+                                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">ACTUAL REVENUE</div>
+                                    <div className="text-xl font-black text-slate-800">${totalActual}k</div>
+                                </div>
+                            </div>
+
+                            <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100 flex items-center gap-4 group/item hover:bg-orange-50/30 transition-colors">
+                                <div className="w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center text-slate-500 shrink-0">
+                                    <AlertTriangle size={20} />
+                                </div>
+                                <div className="flex-1">
+                                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">REVENUE GAP</div>
+                                    <div className="text-xl font-black text-slate-800">${revenueGap}k</div>
+                                </div>
+                            </div>
+
+                            <div className="pt-2 px-2">
+                                <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
+                                    <TrendingUp size={14} className="text-blue-500" />
+                                    <span>You are <b>${revenueGap}k</b> away from the yearly target.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Opportunities Section - Converted to Card List as requested */}
+                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm relative group overflow-hidden">
+                    <div className="flex justify-between items-center mb-6">
+                         <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                             <Briefcase size={20} className="text-indigo-600" />
+                             Cơ hội bán (Opportunities)
+                         </h3>
+                         <button className="flex items-center gap-1.5 text-[11px] font-black text-blue-600 uppercase hover:text-blue-700 transition-colors">
+                             <Plus size={16} /> NEW OPPORTUNITY
+                         </button>
+                    </div>
+
+                    <div className="space-y-4">
+                        {isNew ? (
+                            <div className="py-12 flex flex-col items-center justify-center text-slate-400 border-t border-slate-50">
+                                <Briefcase size={32} className="opacity-10 mb-3" />
+                                <p className="text-sm font-medium">Chưa có cơ hội bán nào được khởi tạo.</p>
+                            </div>
+                        ) : (
+                            <>
+                                {/* Header Labels for visual alignment like the screenshot */}
+                                <div className="grid grid-cols-12 px-6 pb-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                    <div className="col-span-4">TÊN CƠ HỘI</div>
+                                    <div className="col-span-2 text-center">DÒNG SẢN PHẨM</div>
+                                    <div className="col-span-2">SẢN PHẨM</div>
+                                    <div className="col-span-2 text-center">QUY TRÌNH</div>
+                                    <div className="col-span-2 text-right pr-4">TRẠNG THÁI</div>
+                                </div>
+
+                                <div className="space-y-3">
+                                    {MOCK_OPPORTUNITIES.map(opp => (
+                                        <div 
+                                            key={opp.id} 
+                                            className="grid grid-cols-12 items-center px-6 py-5 bg-white border border-slate-100 rounded-xl hover:border-blue-300 hover:shadow-md transition-all cursor-pointer group/opp"
+                                        >
+                                            <div className="col-span-4">
+                                                <div className="flex flex-col">
+                                                    <span className="font-bold text-slate-800 text-[13px] leading-tight mb-1">{opp.name}</span>
+                                                    <span className="text-[11px] text-slate-400 font-bold uppercase tracking-tight">{opp.value}</span>
+                                                </div>
+                                            </div>
+                                            <div className="col-span-2 flex justify-center">
+                                                <span className="px-2.5 py-0.5 rounded bg-slate-50 text-slate-500 text-[9px] font-black uppercase tracking-widest border border-slate-100">
+                                                    {opp.productLine}
+                                                </span>
+                                            </div>
+                                            <div className="col-span-2">
+                                                <span className="text-slate-600 font-medium text-xs truncate block">{opp.product}</span>
+                                            </div>
+                                            <div className="col-span-2 flex justify-center">
+                                                <span className={`px-2.5 py-1 rounded text-[9px] font-black uppercase tracking-tight border ${getStageColor(opp.stage)}`}>
+                                                    {opp.stage}
+                                                </span>
+                                            </div>
+                                            <div className="col-span-2">
+                                                <div className="flex items-center justify-end gap-2.5 pr-4">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_4px_rgba(34,197,94,0.6)]"></span>
+                                                    <span className="text-xs font-bold text-slate-700">{opp.status}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>

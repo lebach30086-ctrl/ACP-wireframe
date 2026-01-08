@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ChevronLeft, Share2, Download, MoreHorizontal, Edit2, Calendar, Save, X } from 'lucide-react';
 import { AccountPlan, PlanTab } from '../types';
@@ -115,7 +114,6 @@ const PlanDashboard: React.FC<PlanDashboardProps> = ({ plan, onBack, onUpdatePla
                         { id: PlanTab.OVERVIEW, label: 'Overview & Performance' },
                         { id: PlanTab.STAKEHOLDERS, label: 'Stakeholder Map' },
                         { id: PlanTab.ANALYSIS, label: 'Strategic Analysis' },
-                        { id: PlanTab.WHITESPACE, label: 'White Space Analysis' },
                         { id: PlanTab.ACTION_PLAN, label: 'Action Plan & Tracking' },
                         { id: PlanTab.APPROVAL, label: 'Approval' },
                     ].map((tab) => (
@@ -136,9 +134,8 @@ const PlanDashboard: React.FC<PlanDashboardProps> = ({ plan, onBack, onUpdatePla
             </div>
 
             <div className="min-h-[500px]">
-                {activeTab === PlanTab.OVERVIEW && <OverviewTab plan={plan} onUpdatePlan={onUpdatePlan} />}
+                {activeTab === PlanTab.OVERVIEW && <OverviewTab plan={plan} onUpdatePlan={onUpdatePlan} onTabChange={setActiveTab} />}
                 {activeTab === PlanTab.ANALYSIS && <MarketTab plan={plan} />}
-                {activeTab === PlanTab.WHITESPACE && <WhitespaceTab plan={plan} />}
                 {activeTab === PlanTab.STAKEHOLDERS && <StrategyTab plan={plan} />}
                 {activeTab === PlanTab.ACTION_PLAN && <ExecutionTab plan={plan} />}
                 {activeTab === PlanTab.APPROVAL && <ApprovalTab plan={plan} onUpdatePlan={onUpdatePlan} />}
