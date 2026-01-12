@@ -8,11 +8,8 @@ import {
     Save, 
     Settings, 
     Trash2, 
-    Eye, 
-    EyeOff, 
     ChevronDown, 
     ChevronUp,
-    X,
     GripVertical
 } from 'lucide-react';
 import { AccountPlan, PlanTab } from '../types';
@@ -101,11 +98,17 @@ const PlanDashboard: React.FC<PlanDashboardProps> = ({ plan, onBack, onUpdatePla
     const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
     const popoverRef = useRef<HTMLDivElement>(null);
 
+    const formatCurrencyInput = (value: number) => {
+        return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    };
+
     // Form state for main info
     const [editForm, setEditForm] = useState({
         accountName: plan.accountName,
         startDate: plan.startDate || '',
-        endDate: plan.endDate || ''
+        endDate: plan.endDate || '',
+        revenue: plan.revenue ? formatCurrencyInput(plan.revenue) : '',
+        description: plan.description || ''
     });
 
     // Close popover when clicking outside
@@ -138,15 +141,26 @@ const PlanDashboard: React.FC<PlanDashboardProps> = ({ plan, onBack, onUpdatePla
     };
 
     const handleSaveMainInfo = () => {
-        onUpdatePlan(editForm);
+        onUpdatePlan({
+            ...editForm,
+            revenue: parseFloat(editForm.revenue.replace(/\./g, '')) || 0
+        });
         setIsEditMainInfoModalOpen(false);
+    };
+
+    const handleRevenueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const rawValue = e.target.value.replace(/\./g, '').replace(/\D/g, '');
+        const formattedValue = rawValue.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        setEditForm(prev => ({ ...prev, revenue: formattedValue }));
     };
 
     const openEditModal = () => {
         setEditForm({
             accountName: plan.accountName,
             startDate: plan.startDate || '',
-            endDate: plan.endDate || ''
+            endDate: plan.endDate || '',
+            revenue: plan.revenue ? formatCurrencyInput(plan.revenue) : '',
+            description: plan.description || ''
         });
         setIsEditMainInfoModalOpen(true);
     };
@@ -338,6 +352,20 @@ const PlanDashboard: React.FC<PlanDashboardProps> = ({ plan, onBack, onUpdatePla
                         />
                     </div>
 
+                    <div className="space-y-2">
+                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest px-1">DOANH THU MỤC TIÊU</label>
+                        <div className="relative">
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+                            <input 
+                                type="text" 
+                                value={editForm.revenue}
+                                onChange={handleRevenueChange}
+                                className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl bg-white text-slate-900 font-bold text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm"
+                                placeholder="0"
+                            />
+                        </div>
+                    </div>
+
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest px-1">NGÀY BẮT ĐẦU</label>
@@ -365,6 +393,16 @@ const PlanDashboard: React.FC<PlanDashboardProps> = ({ plan, onBack, onUpdatePla
                                 />
                             </div>
                         </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest px-1">MÔ TẢ</label>
+                        <textarea 
+                            value={editForm.description}
+                            onChange={(e) => setEditForm({...editForm, description: e.target.value})}
+                            className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-white text-slate-900 font-medium text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm h-24"
+                            placeholder="Mô tả tóm tắt kế hoạch..."
+                        ></textarea>
                     </div>
 
                     <div className="pt-8 flex justify-end items-center gap-8">
@@ -410,17 +448,19 @@ const PlanDashboard: React.FC<PlanDashboardProps> = ({ plan, onBack, onUpdatePla
                                     <div className="text-slate-400 hover:text-slate-600">
                                         <GripVertical size={20} />
                                     </div>
+                                    
+                                    {/* Tab Visibility Toggle */}
+                                    <button 
+                                        onClick={() => toggleTabVisibility(index)}
+                                        className={`w-9 h-5 rounded-full flex items-center transition-colors px-0.5 relative flex-shrink-0 ${tab.visible ? 'bg-blue-600' : 'bg-slate-300'}`}
+                                        title={tab.visible ? 'Hide Tab' : 'Show Tab'}
+                                    >
+                                        <span className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform transform ${tab.visible ? 'translate-x-4' : 'translate-x-0'}`}></span>
+                                    </button>
+
                                     <div className="flex-1 font-bold text-sm text-slate-700">{tab.label}</div>
                                     
                                     <div className="flex items-center gap-2">
-                                        <button 
-                                            onClick={() => toggleTabVisibility(index)}
-                                            className={`p-2 rounded-lg transition-colors ${tab.visible ? 'text-blue-600 bg-blue-50' : 'text-slate-400 bg-slate-100'}`}
-                                            title={tab.visible ? 'Hide Tab' : 'Show Tab'}
-                                        >
-                                            {tab.visible ? <Eye size={18} /> : <EyeOff size={18} />}
-                                        </button>
-                                        
                                         {tab.sections.length > 0 && (
                                             <button 
                                                 onClick={() => toggleConfigExpand(tab.id)}
@@ -435,14 +475,15 @@ const PlanDashboard: React.FC<PlanDashboardProps> = ({ plan, onBack, onUpdatePla
                                 {expandedTabConfig[tab.id] && tab.sections.length > 0 && (
                                     <div className="p-3 bg-white border-t border-slate-100 space-y-2">
                                         {tab.sections.map((section, sIndex) => (
-                                            <div key={section.id} className="flex items-center justify-between p-2 pl-4 hover:bg-slate-50 rounded-lg transition-colors">
-                                                <span className="text-sm text-slate-600 font-medium">{section.label}</span>
+                                            <div key={section.id} className="flex items-center p-2 pl-10 hover:bg-slate-50 rounded-lg transition-colors gap-3">
+                                                {/* Section Visibility Toggle */}
                                                 <button 
                                                     onClick={() => toggleSectionVisibility(index, sIndex)}
-                                                    className={`p-1.5 rounded transition-colors ${section.visible ? 'text-blue-600 bg-blue-50' : 'text-slate-400 bg-slate-100'}`}
+                                                    className={`w-9 h-5 rounded-full flex items-center transition-colors px-0.5 relative flex-shrink-0 ${section.visible ? 'bg-blue-600' : 'bg-slate-300'}`}
                                                 >
-                                                    {section.visible ? <Eye size={16} /> : <EyeOff size={16} />}
+                                                    <span className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform transform ${section.visible ? 'translate-x-4' : 'translate-x-0'}`}></span>
                                                 </button>
+                                                <span className="text-sm text-slate-600 font-medium flex-1">{section.label}</span>
                                             </div>
                                         ))}
                                     </div>

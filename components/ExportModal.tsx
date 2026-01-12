@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Modal from './ui/Modal';
 import { 
@@ -7,8 +6,6 @@ import {
     Presentation, 
     Check, 
     Download, 
-    Globe, 
-    FileIcon,
     Loader2,
     Sparkles,
     Cpu
@@ -25,7 +22,6 @@ type ExportFormat = 'PDF' | 'EXCEL' | 'PPT';
 
 const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, plan }) => {
     const [format, setFormat] = useState<ExportFormat>('PDF');
-    const [language, setLanguage] = useState<'VN' | 'EN'>('VN');
     const [sections, setSections] = useState({
         overview: true,
         stakeholders: true,
@@ -71,8 +67,6 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, plan }) => {
             onClose();
         }, delay);
     };
-
-    const fileName = `${plan.companyName.replace(/\s+/g, '_')}_${plan.accountName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0].replace(/-/g, '')}.${format.toLowerCase() === 'excel' ? 'xlsx' : format.toLowerCase() === 'ppt' ? 'pptx' : 'pdf'}`;
 
     return (
         <Modal 
@@ -155,46 +149,16 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, plan }) => {
                     </div>
                 </div>
 
-                {/* Settings & Preview */}
-                <div className="bg-slate-50 rounded-xl p-5 border border-slate-200 space-y-4">
-                    <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-2 text-sm font-bold text-slate-700">
-                            <Globe size={16} className="text-blue-600" /> Ngôn ngữ
-                        </div>
-                        <div className="flex bg-white p-1 rounded-lg border border-slate-200">
-                            <button 
-                                onClick={() => setLanguage('VN')}
-                                className={`px-4 py-1 text-xs font-bold rounded-md transition-all ${language === 'VN' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-500'}`}
-                            >
-                                Tiếng Việt
-                            </button>
-                            <button 
-                                onClick={() => setLanguage('EN')}
-                                className={`px-4 py-1 text-xs font-bold rounded-md transition-all ${language === 'EN' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-500'}`}
-                            >
-                                English
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-sm font-bold text-slate-700">
-                            <FileIcon size={16} className="text-blue-600" /> Tên tệp tin
-                        </div>
-                        <div className="bg-white px-3 py-2 rounded-lg border border-slate-200 text-xs text-slate-500 font-mono truncate">
-                            {fileName}
-                        </div>
-                    </div>
-
-                    {format === 'PPT' && (
+                {format === 'PPT' && (
+                    <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
                         <div className="p-3 bg-purple-50 border border-purple-100 rounded-lg flex gap-3 items-start">
                             <Sparkles size={16} className="text-purple-600 shrink-0 mt-0.5" />
                             <p className="text-[11px] text-purple-700 leading-relaxed font-medium">
                                 AI sẽ tự động phân tích các phân tích chiến lược (SWOT, Market) để tạo ra các slide tổng kết, ghi chú thuyết trình và đề xuất hành động tối ưu cho buổi họp Stakeholder.
                             </p>
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
 
                 {/* Footer Actions */}
                 <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">

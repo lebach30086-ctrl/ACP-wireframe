@@ -27,6 +27,9 @@ export interface AccountPlan {
     submittedDate?: string;
     approvedDate?: string;
     rejectionReason?: string;
+    
+    // Description
+    description?: string;
   }
 
   export interface Company {
