@@ -52,8 +52,10 @@ import Modal from '../ui/Modal';
 
 interface MarketTabProps {
     plan: AccountPlan;
+    visibleSections?: Record<string, boolean>;
 }
 
+// ... (Rest of interfaces and constants remain the same)
 // --- Types & Constants for Risk/Competitor ---
 interface Competitor {
     id: string;
@@ -212,10 +214,11 @@ const INITIAL_MOCK_COMPETITORS: Competitor[] = [
     }
 ];
 
-const MarketTab: React.FC<MarketTabProps> = ({ plan }) => {
+const MarketTab: React.FC<MarketTabProps> = ({ plan, visibleSections }) => {
     const isNew = plan.isNew;
     const fileInputRef = useRef<HTMLInputElement>(null);
     
+    // ... (State declarations remain the same)
     // --- Basic Strategic States ---
     const [competitors, setCompetitors] = useState<Competitor[]>(isNew ? [] : INITIAL_MOCK_COMPETITORS);
     const [isCompModalOpen, setIsCompModalOpen] = useState(false);
@@ -271,6 +274,7 @@ const MarketTab: React.FC<MarketTabProps> = ({ plan }) => {
     const [oppForm, setOppForm] = useState({ name: '', amount: '', stage: 'Qualification', closeDate: '', categoryId: '', categoryName: '', detailedProductId: '', detailedProductName: '' });
     const [productSearch, setProductSearch] = useState('');
 
+    // ... (Handlers)
     // --- Basic Handlers ---
     const getFileIcon = (fileName: string) => {
         const ext = fileName.split('.').pop()?.toLowerCase();
@@ -389,96 +393,156 @@ const MarketTab: React.FC<MarketTabProps> = ({ plan }) => {
         }
     };
 
+    const isVisible = (sectionId: string) => {
+        if (!visibleSections) return true;
+        return visibleSections[sectionId] !== false;
+    };
+
     return (
         <div className="space-y-6">
             {/* 1. Industry & Market */}
-            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm relative group">
-                <div className="absolute top-6 right-6 flex items-center gap-2">
-                     <button onClick={() => { setIsAiPanelOpen(true); if(!aiData) { setIsAiLoading(true); setTimeout(() => { setAiData({ metrics: [{ id: 'ai-1', label: 'AVG MARGIN', value: '14.5%' }, { id: 'ai-2', label: 'YOY GROWTH', value: '+6.8%' }, { id: 'ai-3', label: 'DIGITAL ADOPTION', value: 'High' }], insights: "• **Market Trend**: Rapid shift towards AI-driven inventory optimization and autonomous supply chain systems.\n• **Regulatory**: New sustainability compliance standards (ESG) affecting manufacturing costs.\n• **Competitor Move**: Major players are consolidating smaller logistics providers to increase market share." }); setIsAiLoading(false); }, 1500); } }} className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-200 rounded-lg text-xs font-bold transition-all shadow-sm"><Sparkles size={14} /> AI Research</button>
-                    <button onClick={() => { setIndustryEdit({...industryData}); setIsIndustryModalOpen(true); }} className={`p-1.5 rounded transition-colors ${isNew ? 'bg-blue-600 text-white opacity-100 shadow-sm' : 'text-slate-400 hover:bg-slate-50 hover:text-blue-600 border border-transparent hover:border-slate-200'}`} title="Edit Manually">{isNew ? <Plus size={16} /> : <Edit2 size={16} />}</button>
+            {isVisible('industry') && (
+                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm relative group">
+                    <div className="absolute top-6 right-6 flex items-center gap-2">
+                         <button onClick={() => { setIsAiPanelOpen(true); if(!aiData) { setIsAiLoading(true); setTimeout(() => { setAiData({ metrics: [{ id: 'ai-1', label: 'AVG MARGIN', value: '14.5%' }, { id: 'ai-2', label: 'YOY GROWTH', value: '+6.8%' }, { id: 'ai-3', label: 'DIGITAL ADOPTION', value: 'High' }], insights: "• **Market Trend**: Rapid shift towards AI-driven inventory optimization and autonomous supply chain systems.\n• **Regulatory**: New sustainability compliance standards (ESG) affecting manufacturing costs.\n• **Competitor Move**: Major players are consolidating smaller logistics providers to increase market share." }); setIsAiLoading(false); }, 1500); } }} className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-200 rounded-lg text-xs font-bold transition-all shadow-sm"><Sparkles size={14} /> AI Research</button>
+                        <button onClick={() => { setIndustryEdit({...industryData}); setIsIndustryModalOpen(true); }} className={`p-1.5 rounded transition-colors ${isNew ? 'bg-blue-600 text-white opacity-100 shadow-sm' : 'text-slate-400 hover:bg-slate-50 hover:text-blue-600 border border-transparent hover:border-slate-200'}`} title="Edit Manually">{isNew ? <Plus size={16} /> : <Edit2 size={16} />}</button>
+                    </div>
+                    <div className="flex justify-between items-start mb-6">
+                        <div>
+                            <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2"><TrendingUp size={20} className="text-blue-600" /> Industry & Market Analysis</h3>
+                            <p className="text-sm text-slate-500">{industryData.industry || 'No industry data'}</p>
+                        </div>
+                    </div>
+                    {isAiPanelOpen && (
+                        <div className="mb-8 rounded-xl overflow-hidden border border-blue-100 bg-white shadow-sm animate-in slide-in-from-top-2 ring-1 ring-blue-100">
+                            <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-blue-50 px-4 py-3 border-b border-blue-100 flex justify-between items-center">
+                                 <div className="flex items-center gap-3"><div className="p-1.5 bg-white rounded-lg shadow-sm text-blue-600 border border-blue-100"><Bot size={18} /></div><div><span className="text-sm font-bold text-slate-800 block">AI Market Intelligence Layer</span><span className="text-[11px] text-slate-500 font-medium">Automated market scanning & trends analysis</span></div></div>
+                                 <div className="flex items-center gap-2">{isAiLoading && <div className="flex items-center gap-2 text-xs font-bold text-blue-600 mr-2"><RefreshCw size={12} className="animate-spin" /> Analyzing...</div>}<button onClick={() => setIsAiPanelOpen(false)} className="text-slate-400 hover:text-slate-600 p-1 hover:bg-white/50 rounded-lg transition-colors"><X size={18} /></button></div>
+                            </div>
+                            <div className="p-5">
+                                {isAiLoading ? <div className="space-y-4"><div className="flex gap-4"><div className="h-24 w-32 bg-slate-50 rounded-xl animate-pulse border border-slate-100"></div><div className="h-24 w-32 bg-slate-50 rounded-xl animate-pulse border border-slate-100"></div><div className="h-24 w-32 bg-slate-50 rounded-xl animate-pulse border border-slate-100"></div></div><div className="h-28 w-full bg-slate-50 rounded-xl animate-pulse border border-slate-100"></div></div> : aiData ? (
+                                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+                                        <div className="md:col-span-4"><h4 className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-3 flex items-center gap-2"><Sparkles size={12} /> Suggested Metrics</h4><div className="space-y-2">{aiData.metrics.map(m => (<div key={m.id} className="p-3 bg-slate-50/50 rounded-xl border border-slate-200 hover:border-blue-300 hover:shadow-sm transition-all flex justify-between items-center group/metric cursor-pointer"><div><div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{m.label}</div><div className="text-xl font-black text-slate-800 mt-0.5">{m.value}</div></div><button onClick={() => { const exIdx = industryData.metrics.findIndex(em => em.label === m.label); let nm = [...industryData.metrics]; if(exIdx >= 0) nm[exIdx] = {...nm[exIdx], value: m.value}; else nm.push({...m, id: Date.now().toString()}); setIndustryData(prev => ({...prev, metrics: nm})); }} className="w-8 h-8 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-blue-600 opacity-0 group-hover/metric:opacity-100 transition-all shadow-sm hover:bg-blue-50" title="Apply metric"><Plus size={16} /></button></div>))}</div></div>
+                                        <div className="md:col-span-8"><div className="flex justify-between items-center mb-3"><h4 className="text-[10px] font-black text-blue-500 uppercase tracking-widest flex items-center gap-2"><Sparkles size={12} /> Market Trends & Insights</h4><button onClick={() => setIndustryData(prev => ({...prev, insights: (prev.insights ? prev.insights + '\n\n' : '') + aiData.insights}))} className="flex items-center gap-1.5 text-[11px] font-bold text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors border border-transparent hover:border-blue-100"><Copy size={14} /> Copy to My Plan</button></div><div className="p-5 bg-slate-50/50 rounded-xl border border-slate-200 text-sm text-slate-600 leading-relaxed shadow-sm whitespace-pre-wrap font-medium">{aiData.insights}</div></div>
+                                    </div>
+                                ) : null}
+                            </div>
+                        </div>
+                    )}
+                    {isNew && !industryData.industry ? <div className="flex flex-col items-center justify-center text-slate-400 min-h-[150px] border-2 border-dashed border-slate-100 rounded-xl"><div className="bg-slate-50 p-4 rounded-full mb-3"><BarChart3 size={32} /></div><p className="text-sm font-medium">Industry data is missing</p></div> : (
+                        <div className="space-y-8">
+                            <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+                                <div className="md:col-span-5 grid grid-cols-2 gap-3">{industryData.metrics.map((m) => (<div key={m.id} className="p-4 bg-slate-50 rounded-lg border border-slate-100"><div className="text-[10px] text-slate-800 font-black uppercase mb-1 tracking-widest">{m.label}</div><div className="text-2xl font-black text-slate-900">{m.value}</div></div>))}</div>
+                                <div className="md:col-span-7 space-y-3"><h4 className="font-bold text-slate-400 text-[11px] uppercase tracking-widest flex items-center gap-2"><Lightbulb size={14} className="text-blue-500" /> INSIGHTS (User Analysis)</h4><div className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap font-medium">{industryData.insights}</div></div>
+                            </div>
+                            {industryData.files.length > 0 && <div className="pt-6 border-t border-slate-100"><h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><Paperclip size={12} /> Supporting Documents ({industryData.files.length})</h4><div className="flex flex-wrap gap-4">{industryData.files.map(file => (<div key={file.id} className="flex items-center gap-4 px-4 py-3 bg-white border border-slate-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all cursor-pointer group/file"><div className="p-2 bg-slate-50 rounded-lg group-hover/file:bg-blue-50 transition-colors">{getFileIcon(file.name)}</div><div className="flex flex-col min-w-0 pr-4"><span className="text-sm font-bold text-slate-800 truncate max-w-[180px]">{file.name}</span><span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter mt-0.5">{file.size}</span></div><div className="flex gap-1.5 ml-auto"><button className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-all" title="Download"><Download size={16} /></button><button className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-all" title="View"><ExternalLink size={16} /></button></div></div>))}</div></div>}
+                        </div>
+                    )}
                 </div>
-                <div className="flex justify-between items-start mb-6">
-                    <div>
-                        <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2"><TrendingUp size={20} className="text-blue-600" /> Industry & Market Analysis</h3>
-                        <p className="text-sm text-slate-500">{industryData.industry || 'No industry data'}</p>
-                    </div>
-                </div>
-                {isAiPanelOpen && (
-                    <div className="mb-8 rounded-xl overflow-hidden border border-blue-100 bg-white shadow-sm animate-in slide-in-from-top-2 ring-1 ring-blue-100">
-                        <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-blue-50 px-4 py-3 border-b border-blue-100 flex justify-between items-center">
-                             <div className="flex items-center gap-3"><div className="p-1.5 bg-white rounded-lg shadow-sm text-blue-600 border border-blue-100"><Bot size={18} /></div><div><span className="text-sm font-bold text-slate-800 block">AI Market Intelligence Layer</span><span className="text-[11px] text-slate-500 font-medium">Automated market scanning & trends analysis</span></div></div>
-                             <div className="flex items-center gap-2">{isAiLoading && <div className="flex items-center gap-2 text-xs font-bold text-blue-600 mr-2"><RefreshCw size={12} className="animate-spin" /> Analyzing...</div>}<button onClick={() => setIsAiPanelOpen(false)} className="text-slate-400 hover:text-slate-600 p-1 hover:bg-white/50 rounded-lg transition-colors"><X size={18} /></button></div>
-                        </div>
-                        <div className="p-5">
-                            {isAiLoading ? <div className="space-y-4"><div className="flex gap-4"><div className="h-24 w-32 bg-slate-50 rounded-xl animate-pulse border border-slate-100"></div><div className="h-24 w-32 bg-slate-50 rounded-xl animate-pulse border border-slate-100"></div><div className="h-24 w-32 bg-slate-50 rounded-xl animate-pulse border border-slate-100"></div></div><div className="h-28 w-full bg-slate-50 rounded-xl animate-pulse border border-slate-100"></div></div> : aiData ? (
-                                <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-                                    <div className="md:col-span-4"><h4 className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-3 flex items-center gap-2"><Sparkles size={12} /> Suggested Metrics</h4><div className="space-y-2">{aiData.metrics.map(m => (<div key={m.id} className="p-3 bg-slate-50/50 rounded-xl border border-slate-200 hover:border-blue-300 hover:shadow-sm transition-all flex justify-between items-center group/metric cursor-pointer"><div><div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{m.label}</div><div className="text-xl font-black text-slate-800 mt-0.5">{m.value}</div></div><button onClick={() => { const exIdx = industryData.metrics.findIndex(em => em.label === m.label); let nm = [...industryData.metrics]; if(exIdx >= 0) nm[exIdx] = {...nm[exIdx], value: m.value}; else nm.push({...m, id: Date.now().toString()}); setIndustryData(prev => ({...prev, metrics: nm})); }} className="w-8 h-8 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-blue-600 opacity-0 group-hover/metric:opacity-100 transition-all shadow-sm hover:bg-blue-50" title="Apply metric"><Plus size={16} /></button></div>))}</div></div>
-                                    <div className="md:col-span-8"><div className="flex justify-between items-center mb-3"><h4 className="text-[10px] font-black text-blue-500 uppercase tracking-widest flex items-center gap-2"><Sparkles size={12} /> Market Trends & Insights</h4><button onClick={() => setIndustryData(prev => ({...prev, insights: (prev.insights ? prev.insights + '\n\n' : '') + aiData.insights}))} className="flex items-center gap-1.5 text-[11px] font-bold text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors border border-transparent hover:border-blue-100"><Copy size={14} /> Copy to My Plan</button></div><div className="p-5 bg-slate-50/50 rounded-xl border border-slate-200 text-sm text-slate-600 leading-relaxed shadow-sm whitespace-pre-wrap font-medium">{aiData.insights}</div></div>
-                                </div>
-                            ) : null}
-                        </div>
-                    </div>
-                )}
-                {isNew && !industryData.industry ? <div className="flex flex-col items-center justify-center text-slate-400 min-h-[150px] border-2 border-dashed border-slate-100 rounded-xl"><div className="bg-slate-50 p-4 rounded-full mb-3"><BarChart3 size={32} /></div><p className="text-sm font-medium">Industry data is missing</p></div> : (
-                    <div className="space-y-8">
-                        <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-                            <div className="md:col-span-5 grid grid-cols-2 gap-3">{industryData.metrics.map((m) => (<div key={m.id} className="p-4 bg-slate-50 rounded-lg border border-slate-100"><div className="text-[10px] text-slate-800 font-black uppercase mb-1 tracking-widest">{m.label}</div><div className="text-2xl font-black text-slate-900">{m.value}</div></div>))}</div>
-                            <div className="md:col-span-7 space-y-3"><h4 className="font-bold text-slate-400 text-[11px] uppercase tracking-widest flex items-center gap-2"><Lightbulb size={14} className="text-blue-500" /> INSIGHTS (User Analysis)</h4><div className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap font-medium">{industryData.insights}</div></div>
-                        </div>
-                        {industryData.files.length > 0 && <div className="pt-6 border-t border-slate-100"><h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><Paperclip size={12} /> Supporting Documents ({industryData.files.length})</h4><div className="flex flex-wrap gap-4">{industryData.files.map(file => (<div key={file.id} className="flex items-center gap-4 px-4 py-3 bg-white border border-slate-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all cursor-pointer group/file"><div className="p-2 bg-slate-50 rounded-lg group-hover/file:bg-blue-50 transition-colors">{getFileIcon(file.name)}</div><div className="flex flex-col min-w-0 pr-4"><span className="text-sm font-bold text-slate-800 truncate max-w-[180px]">{file.name}</span><span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter mt-0.5">{file.size}</span></div><div className="flex gap-1.5 ml-auto"><button className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-all" title="Download"><Download size={16} /></button><button className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-all" title="View"><ExternalLink size={16} /></button></div></div>))}</div></div>}
-                    </div>
-                )}
-            </div>
+            )}
 
             {/* 2. SWOT Matrix */}
-            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col">
-                <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2"><Search size={20} className="text-purple-600" /> SWOT Matrix</h3>
-                    <button onClick={() => { setSwotEdit({ strengths: swot.strengths.join('. '), weaknesses: swot.weaknesses.join('. '), opportunities: swot.opportunities.join('. '), threats: swot.threats.join('. ') }); setIsSwotModalOpen(true); }} className="text-xs text-blue-600 font-bold hover:underline">Edit SWOT</button>
+            {isVisible('swot') && (
+                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+                    <div className="flex justify-between items-center mb-6">
+                        <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2"><Search size={20} className="text-purple-600" /> SWOT Matrix</h3>
+                        <button onClick={() => { setSwotEdit({ strengths: swot.strengths.join('. '), weaknesses: swot.weaknesses.join('. '), opportunities: swot.opportunities.join('. '), threats: swot.threats.join('. ') }); setIsSwotModalOpen(true); }} className="text-xs text-blue-600 font-bold hover:underline">Edit SWOT</button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+                        <div className="bg-green-50 border border-green-100 p-4 rounded-xl"><span className="font-black text-green-700 block mb-2 uppercase tracking-widest">STRENGTHS</span><ul className="space-y-1.5 text-green-900 list-none font-medium">{swot.strengths.map((s, i) => (<li key={i} className="flex gap-2"><span className="text-green-500">•</span> {s}</li>))}</ul></div>
+                        <div className="bg-red-50 border border-red-100 p-4 rounded-xl"><span className="font-black text-red-700 block mb-2 uppercase tracking-widest">WEAKNESSES</span><ul className="space-y-1.5 text-red-900 list-none font-medium">{swot.weaknesses.map((s, i) => (<li key={i} className="flex gap-2"><span className="text-green-500">•</span> {s}</li>))}</ul></div>
+                        <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl"><span className="font-black text-blue-700 block mb-2 uppercase tracking-widest">OPPORTUNITIES</span><ul className="space-y-1.5 text-blue-900 list-none font-medium">{swot.opportunities.map((s, i) => (<li key={i} className="flex gap-2"><span className="text-blue-500">•</span> {s}</li>))}</ul></div>
+                        <div className="bg-orange-50 border border-orange-100 p-4 rounded-xl"><span className="font-black text-orange-700 block mb-2 uppercase tracking-widest">THREATS</span><ul className="space-y-1.5 text-orange-900 list-none font-medium">{swot.threats.map((s, i) => (<li key={i} className="flex gap-2"><span className="text-orange-500">•</span> {s}</li>))}</ul></div>
+                    </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
-                    <div className="bg-green-50 border border-green-100 p-4 rounded-xl"><span className="font-black text-green-700 block mb-2 uppercase tracking-widest">STRENGTHS</span><ul className="space-y-1.5 text-green-900 list-none font-medium">{swot.strengths.map((s, i) => (<li key={i} className="flex gap-2"><span className="text-green-500">•</span> {s}</li>))}</ul></div>
-                    <div className="bg-red-50 border border-red-100 p-4 rounded-xl"><span className="font-black text-red-700 block mb-2 uppercase tracking-widest">WEAKNESSES</span><ul className="space-y-1.5 text-red-900 list-none font-medium">{swot.weaknesses.map((s, i) => (<li key={i} className="flex gap-2"><span className="text-green-500">•</span> {s}</li>))}</ul></div>
-                    <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl"><span className="font-black text-blue-700 block mb-2 uppercase tracking-widest">OPPORTUNITIES</span><ul className="space-y-1.5 text-blue-900 list-none font-medium">{swot.opportunities.map((s, i) => (<li key={i} className="flex gap-2"><span className="text-blue-500">•</span> {s}</li>))}</ul></div>
-                    <div className="bg-orange-50 border border-orange-100 p-4 rounded-xl"><span className="font-black text-orange-700 block mb-2 uppercase tracking-widest">THREATS</span><ul className="space-y-1.5 text-orange-900 list-none font-medium">{swot.threats.map((s, i) => (<li key={i} className="flex gap-2"><span className="text-orange-500">•</span> {s}</li>))}</ul></div>
-                </div>
-            </div>
+            )}
 
             {/* 3. Combined Strategic Landscape: Risks & Competitors */}
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="p-6 border-b border-slate-200 flex justify-between items-center bg-slate-50/30">
-                    <div>
-                        <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2"><ShieldAlert size={22} className="text-red-600" /> Risk & Competitive Landscape</h3>
-                        <p className="text-xs text-slate-500 font-medium">Unified management of account challenges and rival movements</p>
+            {isVisible('risk_competitor') && (
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="p-6 border-b border-slate-200 flex justify-between items-center bg-slate-50/30">
+                        <div>
+                            <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2"><ShieldAlert size={22} className="text-red-600" /> Risk & Competitive Landscape</h3>
+                            <p className="text-xs text-slate-500 font-medium">Unified management of account challenges and rival movements</p>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-12">
+                        <div className="lg:col-span-4 p-6 border-r border-slate-100 bg-slate-50/10">
+                            <div className="flex justify-between items-center mb-6">
+                                <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><AlertTriangle size={14} className="text-orange-500" /> Risks & Challenges</h4>
+                                <button onClick={() => { setEditingRiskId(null); setRiskFormData({ risk: '', impact: 'Medium', prob: 'Medium', mitigation: '' }); setIsRiskModalOpen(true); }} className="text-blue-600 hover:bg-blue-50 p-1.5 rounded-lg transition-all"><Plus size={18} /></button>
+                            </div>
+                            <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                                 {risks.map((item) => (<div key={item.id} onClick={() => handleEditRisk(item)} className="p-4 border border-slate-200 rounded-xl transition-all bg-white hover:shadow-md cursor-pointer group/risk"><div className="flex justify-between items-start mb-2"><span className="font-bold text-slate-800 text-sm">{item.risk}</span><span className={`text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wide border ${item.impact === 'High' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-orange-50 text-orange-600 border-orange-100'}`}>{item.impact}</span></div><div className="text-[11px] bg-slate-50/80 p-2 rounded-lg text-slate-700 border border-slate-100 italic leading-relaxed group-hover/risk:bg-blue-50/30 group-hover/risk:border-blue-100 transition-colors">{item.mitigation}</div></div>))}
+                            </div>
+                        </div>
+                        <div className="lg:col-span-8 p-6">
+                            <div className="flex justify-between items-center mb-6">
+                                <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><Swords size={14} className="text-red-500" /> Competitor Analysis</h4>
+                                <button onClick={() => { setEditingCompetitorId(null); setCompFormData({ name: '', website: '', threatLevel: 'Medium', strengths: '', weaknesses: '', differentiatingFactors: '' }); setIsCompModalOpen(true); }} className="text-blue-600 hover:bg-blue-50 p-1.5 rounded-lg transition-all"><Plus size={18} /></button>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left text-sm">
+                                    <thead className="bg-slate-50/50 text-slate-500 font-bold text-[10px] uppercase tracking-wider border-b border-slate-100">
+                                        <tr><th className="px-4 py-3">COMPETITOR</th><th className="px-4 py-3">THREAT</th><th className="px-4 py-3">USP / DIFFERENTIATION</th><th className="px-4 py-3 text-right"></th></tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100">
+                                        {competitors.map((comp) => (
+                                            <tr key={comp.id} className="hover:bg-slate-50/50 transition-colors group">
+                                                <td className="px-4 py-4 align-top"><div className="font-bold text-slate-800 text-sm">{comp.name}</div>{comp.website && <a href={comp.website} target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-600 hover:underline flex items-center gap-1 mt-0.5 font-medium"><Globe size={8} /> Visit</a>}</td>
+                                                <td className="px-4 py-4 align-top"><span className={`px-2 py-0.5 rounded-full text-[9px] font-black border ${getThreatColor(comp.threatLevel)}`}>{comp.threatLevel}</span></td>
+                                                <td className="px-4 py-4 align-top text-slate-600 leading-relaxed text-xs font-medium">{comp.differentiatingFactors || <span className="text-slate-400 italic">Not defined</span>}</td>
+                                                <td className="px-4 py-4 align-top text-right"><div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => handleEditCompetitor(comp)} className="text-slate-400 hover:text-blue-600 p-1.5 rounded-full hover:bg-blue-50 transition-all"><Edit2 size={14} /></button><button onClick={() => handleDeleteCompetitor(comp.id)} className="text-slate-400 hover:text-red-600 p-1.5 rounded-full hover:bg-red-50 transition-all"><Trash2 size={14} /></button></div></td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-12">
-                    <div className="lg:col-span-4 p-6 border-r border-slate-100 bg-slate-50/10">
-                        <div className="flex justify-between items-center mb-6">
-                            <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><AlertTriangle size={14} className="text-orange-500" /> Risks & Challenges</h4>
-                            <button onClick={() => { setEditingRiskId(null); setRiskFormData({ risk: '', impact: 'Medium', prob: 'Medium', mitigation: '' }); setIsRiskModalOpen(true); }} className="text-blue-600 hover:bg-blue-50 p-1.5 rounded-lg transition-all"><Plus size={18} /></button>
+            )}
+
+            {/* 4. White Space Analysis - Integrated directly into this tab */}
+            {isVisible('whitespace') && (
+                <div className="pt-10 border-t-2 border-slate-100">
+                    <div className="bg-gradient-to-br from-indigo-700 via-blue-600 to-blue-500 rounded-2xl p-8 text-white shadow-xl relative overflow-hidden mb-6">
+                        <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                            <div className="md:col-span-8">
+                                <div className="inline-flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full text-xs font-bold mb-4 backdrop-blur-md"><Sparkles size={14} className="text-yellow-300" /> AI ECOSYSTEM ANALYSIS</div>
+                                <h2 className="text-3xl font-black mb-3 leading-tight tracking-tight">Identify & Convert <br/>Whitespace Opportunities</h2>
+                                <p className="text-blue-50/80 text-sm max-w-xl leading-relaxed">Based on account transaction behavior and peer benchmarking, we've prioritized <span className="mx-1 text-white font-black underline decoration-yellow-400 decoration-2 underline-offset-4">3 High Potential</span> opportunities across subsidiaries.</p>
+                            </div>
+                            <div className="md:col-span-4 flex justify-end"><div className="bg-white/10 p-6 rounded-2xl border border-white/20 backdrop-blur-md text-center"><div className="text-[10px] font-bold text-blue-200 uppercase tracking-widest mb-1">Total Target Value</div><div className="text-4xl font-black">$1.25M</div><div className="mt-2 text-xs font-bold text-green-300">+12% vs LY</div></div></div>
                         </div>
-                        <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-                             {risks.map((item) => (<div key={item.id} onClick={() => handleEditRisk(item)} className="p-4 border border-slate-200 rounded-xl transition-all bg-white hover:shadow-md cursor-pointer group/risk"><div className="flex justify-between items-start mb-2"><span className="font-bold text-slate-800 text-sm">{item.risk}</span><span className={`text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wide border ${item.impact === 'High' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-orange-50 text-orange-600 border-orange-100'}`}>{item.impact}</span></div><div className="text-[11px] bg-slate-50/80 p-2 rounded-lg text-slate-700 border border-slate-100 italic leading-relaxed group-hover/risk:bg-blue-50/30 group-hover/risk:border-blue-100 transition-colors">{item.mitigation}</div></div>))}
-                        </div>
+                        <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
                     </div>
-                    <div className="lg:col-span-8 p-6">
-                        <div className="flex justify-between items-center mb-6">
-                            <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><Swords size={14} className="text-red-500" /> Competitor Analysis</h4>
-                            <button onClick={() => { setEditingCompetitorId(null); setCompFormData({ name: '', website: '', threatLevel: 'Medium', strengths: '', weaknesses: '', differentiatingFactors: '' }); setIsCompModalOpen(true); }} className="text-blue-600 hover:bg-blue-50 p-1.5 rounded-lg transition-all"><Plus size={18} /></button>
-                        </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left text-sm">
-                                <thead className="bg-slate-50/50 text-slate-500 font-bold text-[10px] uppercase tracking-wider border-b border-slate-100">
-                                    <tr><th className="px-4 py-3">COMPETITOR</th><th className="px-4 py-3">THREAT</th><th className="px-4 py-3">USP / DIFFERENTIATION</th><th className="px-4 py-3 text-right"></th></tr>
+
+                    <div className="flex flex-wrap gap-8 px-2 bg-white p-4 rounded-xl border border-slate-100 shadow-sm mb-6">
+                        <div className="flex items-center gap-2.5 text-xs font-bold text-slate-600"><div className="w-5 h-5 bg-green-100 text-green-600 rounded-full flex items-center justify-center"><CheckCircle2 size={14} /></div><span>Active Product (Đã sử dụng)</span></div>
+                        <div className="flex items-center gap-2.5 text-xs font-bold text-slate-600"><div className="w-5 h-5 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center"><Hourglass size={14} /></div><span>In Pipeline (Đang đàm phán)</span></div>
+                        <div className="flex items-center gap-2.5 text-xs font-bold text-slate-600"><div className="w-5 h-5 border border-slate-200 text-slate-300 rounded-full flex items-center justify-center"><PlusCircleIcon size={14} /></div><span>Whitespace (Khoảng trống)</span></div>
+                        <div className="flex items-center gap-2.5 text-xs font-bold text-slate-600"><div className="w-5 h-5 bg-red-50 border border-red-100 text-red-400 rounded-full flex items-center justify-center"><XCircle size={14} /></div><span>Competitor (Đối thủ nắm giữ)</span></div>
+                    </div>
+
+                    <div className="bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden">
+                        <div className="overflow-x-auto pb-4 custom-scrollbar">
+                            <table className="w-full border-collapse">
+                                <thead>
+                                    <tr>
+                                        <th className="sticky left-0 z-20 bg-slate-50 border-b border-r border-slate-200 p-6 text-left min-w-[220px] shadow-[4px_0_12px_-4px_rgba(0,0,0,0.05)]"><span className="text-xs font-black text-slate-400 uppercase tracking-widest">Account Entity</span></th>
+                                        {PRODUCT_CATEGORIES.map(product => (<th key={product.id} className="bg-slate-50 border-b border-r border-slate-100 p-6 min-w-[160px] last:border-r-0"><div className="flex flex-col items-center gap-1"><span className="text-sm font-black text-slate-800 tracking-tight">{product.name}</span><span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2 py-0.5 bg-slate-100 rounded-full">{product.category}</span></div></th>))}
+                                    </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
-                                    {competitors.map((comp) => (
-                                        <tr key={comp.id} className="hover:bg-slate-50/50 transition-colors group">
-                                            <td className="px-4 py-4 align-top"><div className="font-bold text-slate-800 text-sm">{comp.name}</div>{comp.website && <a href={comp.website} target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-600 hover:underline flex items-center gap-1 mt-0.5 font-medium"><Globe size={8} /> Visit</a>}</td>
-                                            <td className="px-4 py-4 align-top"><span className={`px-2 py-0.5 rounded-full text-[9px] font-black border ${getThreatColor(comp.threatLevel)}`}>{comp.threatLevel}</span></td>
-                                            <td className="px-4 py-4 align-top text-slate-600 leading-relaxed text-xs font-medium">{comp.differentiatingFactors || <span className="text-slate-400 italic">Not defined</span>}</td>
-                                            <td className="px-4 py-4 align-top text-right"><div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => handleEditCompetitor(comp)} className="text-slate-400 hover:text-blue-600 p-1.5 rounded-full hover:bg-blue-50 transition-all"><Edit2 size={14} /></button><button onClick={() => handleDeleteCompetitor(comp.id)} className="text-slate-400 hover:text-red-600 p-1.5 rounded-full hover:bg-red-50 transition-all"><Trash2 size={14} /></button></div></td>
+                                    {matrix.map(row => (
+                                        <tr key={row.id} className="hover:bg-slate-50/50 transition-colors">
+                                            <td className="sticky left-0 z-10 bg-white border-b border-r border-slate-200 p-6 font-bold text-sm text-slate-800 shadow-[4px_0_12px_-4px_rgba(0,0,0,0.05)] transition-colors group-hover:bg-slate-50/50"><div className="flex flex-col">{row.name}<span className="text-[10px] text-slate-400 font-medium">Global ID: {row.id.toUpperCase()}</span></div></td>
+                                            {PRODUCT_CATEGORIES.map(category => {
+                                                const cell = row.cells[category.id] || { status: 'Whitespace' };
+                                                const isHovering = hoveredCell?.rowId === row.id && hoveredCell?.prodId === category.id;
+                                                return (<td key={`${row.id}-${category.id}`} className={`relative border-b border-r border-slate-100 p-6 text-center transition-all duration-200 last:border-r-0 ${cell.status === 'Whitespace' || cell.status === 'Owned' ? 'cursor-pointer hover:bg-blue-50/30' : ''} ${isHovering && (cell.status === 'Whitespace' || cell.status === 'Owned') ? 'bg-blue-50 shadow-inner' : ''}`} onMouseEnter={(e) => setHoveredCell({ rowId: row.id, prodId: category.id, rect: e.currentTarget.getBoundingClientRect() })} onMouseLeave={() => setHoveredCell(null)} onClick={() => handleCellClick(row.id, category.id, cell)}>{renderCellContent(cell)}</td>);
+                                            })}
                                         </tr>
                                     ))}
                                 </tbody>
@@ -486,54 +550,7 @@ const MarketTab: React.FC<MarketTabProps> = ({ plan }) => {
                         </div>
                     </div>
                 </div>
-            </div>
-
-            {/* 4. White Space Analysis - Integrated directly into this tab */}
-            <div className="pt-10 border-t-2 border-slate-100">
-                <div className="bg-gradient-to-br from-indigo-700 via-blue-600 to-blue-500 rounded-2xl p-8 text-white shadow-xl relative overflow-hidden mb-6">
-                    <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-                        <div className="md:col-span-8">
-                            <div className="inline-flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full text-xs font-bold mb-4 backdrop-blur-md"><Sparkles size={14} className="text-yellow-300" /> AI ECOSYSTEM ANALYSIS</div>
-                            <h2 className="text-3xl font-black mb-3 leading-tight tracking-tight">Identify & Convert <br/>Whitespace Opportunities</h2>
-                            <p className="text-blue-50/80 text-sm max-w-xl leading-relaxed">Based on account transaction behavior and peer benchmarking, we've prioritized <span className="mx-1 text-white font-black underline decoration-yellow-400 decoration-2 underline-offset-4">3 High Potential</span> opportunities across subsidiaries.</p>
-                        </div>
-                        <div className="md:col-span-4 flex justify-end"><div className="bg-white/10 p-6 rounded-2xl border border-white/20 backdrop-blur-md text-center"><div className="text-[10px] font-bold text-blue-200 uppercase tracking-widest mb-1">Total Target Value</div><div className="text-4xl font-black">$1.25M</div><div className="mt-2 text-xs font-bold text-green-300">+12% vs LY</div></div></div>
-                    </div>
-                    <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
-                </div>
-
-                <div className="flex flex-wrap gap-8 px-2 bg-white p-4 rounded-xl border border-slate-100 shadow-sm mb-6">
-                    <div className="flex items-center gap-2.5 text-xs font-bold text-slate-600"><div className="w-5 h-5 bg-green-100 text-green-600 rounded-full flex items-center justify-center"><CheckCircle2 size={14} /></div><span>Active Product (Đã sử dụng)</span></div>
-                    <div className="flex items-center gap-2.5 text-xs font-bold text-slate-600"><div className="w-5 h-5 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center"><Hourglass size={14} /></div><span>In Pipeline (Đang đàm phán)</span></div>
-                    <div className="flex items-center gap-2.5 text-xs font-bold text-slate-600"><div className="w-5 h-5 border border-slate-200 text-slate-300 rounded-full flex items-center justify-center"><PlusCircleIcon size={14} /></div><span>Whitespace (Khoảng trống)</span></div>
-                    <div className="flex items-center gap-2.5 text-xs font-bold text-slate-600"><div className="w-5 h-5 bg-red-50 border border-red-100 text-red-400 rounded-full flex items-center justify-center"><XCircle size={14} /></div><span>Competitor (Đối thủ nắm giữ)</span></div>
-                </div>
-
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden">
-                    <div className="overflow-x-auto pb-4 custom-scrollbar">
-                        <table className="w-full border-collapse">
-                            <thead>
-                                <tr>
-                                    <th className="sticky left-0 z-20 bg-slate-50 border-b border-r border-slate-200 p-6 text-left min-w-[220px] shadow-[4px_0_12px_-4px_rgba(0,0,0,0.05)]"><span className="text-xs font-black text-slate-400 uppercase tracking-widest">Account Entity</span></th>
-                                    {PRODUCT_CATEGORIES.map(product => (<th key={product.id} className="bg-slate-50 border-b border-r border-slate-100 p-6 min-w-[160px] last:border-r-0"><div className="flex flex-col items-center gap-1"><span className="text-sm font-black text-slate-800 tracking-tight">{product.name}</span><span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2 py-0.5 bg-slate-100 rounded-full">{product.category}</span></div></th>))}
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {matrix.map(row => (
-                                    <tr key={row.id} className="hover:bg-slate-50/50 transition-colors">
-                                        <td className="sticky left-0 z-10 bg-white border-b border-r border-slate-200 p-6 font-bold text-sm text-slate-800 shadow-[4px_0_12px_-4px_rgba(0,0,0,0.05)] transition-colors group-hover:bg-slate-50/50"><div className="flex flex-col">{row.name}<span className="text-[10px] text-slate-400 font-medium">Global ID: {row.id.toUpperCase()}</span></div></td>
-                                        {PRODUCT_CATEGORIES.map(category => {
-                                            const cell = row.cells[category.id] || { status: 'Whitespace' };
-                                            const isHovering = hoveredCell?.rowId === row.id && hoveredCell?.prodId === category.id;
-                                            return (<td key={`${row.id}-${category.id}`} className={`relative border-b border-r border-slate-100 p-6 text-center transition-all duration-200 last:border-r-0 ${cell.status === 'Whitespace' || cell.status === 'Owned' ? 'cursor-pointer hover:bg-blue-50/30' : ''} ${isHovering && (cell.status === 'Whitespace' || cell.status === 'Owned') ? 'bg-blue-50 shadow-inner' : ''}`} onMouseEnter={(e) => setHoveredCell({ rowId: row.id, prodId: category.id, rect: e.currentTarget.getBoundingClientRect() })} onMouseLeave={() => setHoveredCell(null)} onClick={() => handleCellClick(row.id, category.id, cell)}>{renderCellContent(cell)}</td>);
-                                        })}
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+            )}
 
             {/* --- Modals for Industry & Market --- */}
             <Modal isOpen={isIndustryModalOpen} onClose={() => setIsIndustryModalOpen(false)} title="Edit Industry & Market Analysis" maxWidth="max-w-[80%]">

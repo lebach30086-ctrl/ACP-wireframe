@@ -1,12 +1,26 @@
-import React, { useState } from 'react';
-import { ChevronLeft, Share2, Download, MoreHorizontal, Edit2, Calendar, Save, X } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { 
+    ChevronLeft, 
+    Download, 
+    MoreHorizontal, 
+    Edit2, 
+    Calendar, 
+    Save, 
+    Settings, 
+    Trash2, 
+    Eye, 
+    EyeOff, 
+    ChevronDown, 
+    ChevronUp,
+    X,
+    GripVertical
+} from 'lucide-react';
 import { AccountPlan, PlanTab } from '../types';
 import OverviewTab from './dashboard/OverviewTab';
 import MarketTab from './dashboard/MarketTab';
 import StrategyTab from './dashboard/StrategyTab';
 import ExecutionTab from './dashboard/ExecutionTab';
 import ApprovalTab from './dashboard/ApprovalTab';
-import WhitespaceTab from './dashboard/WhitespaceTab';
 import ExportModal from './ExportModal';
 import Modal from './ui/Modal';
 
@@ -16,10 +30,76 @@ interface PlanDashboardProps {
     onUpdatePlan: (fields: Partial<AccountPlan>) => void;
 }
 
+interface SectionConfig {
+    id: string;
+    label: string;
+    visible: boolean;
+}
+
+interface TabConfig {
+    id: PlanTab;
+    label: string;
+    visible: boolean;
+    sections: SectionConfig[];
+}
+
+const INITIAL_TABS_CONFIG: TabConfig[] = [
+    {
+        id: PlanTab.OVERVIEW,
+        label: 'Overview & Performance',
+        visible: true,
+        sections: [
+            { id: 'profile', label: 'Account Profile', visible: true },
+            { id: 'product_holding', label: 'Product Holding', visible: true },
+            { id: 'financial', label: 'Tình hình tài chính', visible: true },
+            { id: 'action_progress', label: 'Action Plan Progress', visible: true },
+            { id: 'revenue', label: 'Revenue Performance', visible: true },
+            { id: 'opportunities', label: 'Cơ hội bán', visible: true },
+        ]
+    },
+    {
+        id: PlanTab.STAKEHOLDERS,
+        label: 'Stakeholder Map',
+        visible: true,
+        sections: []
+    },
+    {
+        id: PlanTab.ANALYSIS,
+        label: 'Strategic Analysis',
+        visible: true,
+        sections: [
+            { id: 'industry', label: 'Industry & Market Analysis', visible: true },
+            { id: 'swot', label: 'SWOT Matrix', visible: true },
+            { id: 'risk_competitor', label: 'Risk & Competitive Landscape', visible: true },
+            { id: 'whitespace', label: 'Whitespace Analysis', visible: true },
+        ]
+    },
+    {
+        id: PlanTab.ACTION_PLAN,
+        label: 'Action Plan & Tracking',
+        visible: true,
+        sections: []
+    },
+    {
+        id: PlanTab.APPROVAL,
+        label: 'Approval',
+        visible: true,
+        sections: []
+    }
+];
+
 const PlanDashboard: React.FC<PlanDashboardProps> = ({ plan, onBack, onUpdatePlan }) => {
     const [activeTab, setActiveTab] = useState<PlanTab>(PlanTab.OVERVIEW);
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     const [isEditMainInfoModalOpen, setIsEditMainInfoModalOpen] = useState(false);
+    
+    // Config View State
+    const [tabsConfig, setTabsConfig] = useState<TabConfig[]>(INITIAL_TABS_CONFIG);
+    const [isMorePopoverOpen, setIsMorePopoverOpen] = useState(false);
+    const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
+    const [tempTabsConfig, setTempTabsConfig] = useState<TabConfig[]>([]);
+    const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
+    const popoverRef = useRef<HTMLDivElement>(null);
 
     // Form state for main info
     const [editForm, setEditForm] = useState({
@@ -27,6 +107,17 @@ const PlanDashboard: React.FC<PlanDashboardProps> = ({ plan, onBack, onUpdatePla
         startDate: plan.startDate || '',
         endDate: plan.endDate || ''
     });
+
+    // Close popover when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+                setIsMorePopoverOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const getStatusStyles = (status: string) => {
         switch (status) {
@@ -58,6 +149,70 @@ const PlanDashboard: React.FC<PlanDashboardProps> = ({ plan, onBack, onUpdatePla
             endDate: plan.endDate || ''
         });
         setIsEditMainInfoModalOpen(true);
+    };
+
+    // Configuration Handlers
+    const openConfigModal = () => {
+        setTempTabsConfig(JSON.parse(JSON.stringify(tabsConfig))); // Deep copy
+        setIsConfigModalOpen(true);
+        setIsMorePopoverOpen(false);
+    };
+
+    const handleSaveConfig = () => {
+        setTabsConfig(tempTabsConfig);
+        setIsConfigModalOpen(false);
+        // If current active tab becomes hidden, switch to the first visible one
+        const currentTabVisible = tempTabsConfig.find(t => t.id === activeTab)?.visible;
+        if (!currentTabVisible) {
+            const firstVisible = tempTabsConfig.find(t => t.visible);
+            if (firstVisible) setActiveTab(firstVisible.id);
+        }
+    };
+
+    const toggleTabVisibility = (index: number) => {
+        const newConfig = [...tempTabsConfig];
+        newConfig[index].visible = !newConfig[index].visible;
+        setTempTabsConfig(newConfig);
+    };
+
+    const handleDragStart = (e: React.DragEvent<HTMLDivElement>, index: number) => {
+        setDraggedItemIndex(index);
+        e.dataTransfer.effectAllowed = "move";
+        // To avoid ghost image issues or customize it, can set dataTransfer.setDragImage here
+    };
+
+    const handleDragEnter = (e: React.DragEvent<HTMLDivElement>, index: number) => {
+        if (draggedItemIndex === null || draggedItemIndex === index) return;
+        
+        const newConfig = [...tempTabsConfig];
+        const draggedItem = newConfig[draggedItemIndex];
+        newConfig.splice(draggedItemIndex, 1);
+        newConfig.splice(index, 0, draggedItem);
+        
+        setTempTabsConfig(newConfig);
+        setDraggedItemIndex(index);
+    };
+
+    const handleDragEnd = () => {
+        setDraggedItemIndex(null);
+    };
+
+    const toggleSectionVisibility = (tabIndex: number, sectionIndex: number) => {
+        const newConfig = [...tempTabsConfig];
+        newConfig[tabIndex].sections[sectionIndex].visible = !newConfig[tabIndex].sections[sectionIndex].visible;
+        setTempTabsConfig(newConfig);
+    };
+
+    // Get visible sections for current tab
+    const currentTabConfig = tabsConfig.find(t => t.id === activeTab);
+    const visibleSections = currentTabConfig?.sections.reduce((acc, sec) => {
+        acc[sec.id] = sec.visible;
+        return acc;
+    }, {} as Record<string, boolean>) || {};
+
+    const [expandedTabConfig, setExpandedTabConfig] = useState<Record<string, boolean>>({});
+    const toggleConfigExpand = (id: string) => {
+        setExpandedTabConfig(prev => ({...prev, [id]: !prev[id]}));
     };
 
     return (
@@ -100,23 +255,40 @@ const PlanDashboard: React.FC<PlanDashboardProps> = ({ plan, onBack, onUpdatePla
                         >
                             <Download size={20} />
                         </button>
-                        <button className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors" title="Share">
-                            <Share2 size={20} />
-                        </button>
-                        <button className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors">
-                            <MoreHorizontal size={20} />
-                        </button>
+                        
+                        <div className="relative" ref={popoverRef}>
+                            <button 
+                                onClick={() => setIsMorePopoverOpen(!isMorePopoverOpen)}
+                                className={`p-2 rounded-lg transition-colors ${isMorePopoverOpen ? 'bg-slate-100 text-slate-800' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}
+                            >
+                                <MoreHorizontal size={20} />
+                            </button>
+                            
+                            {isMorePopoverOpen && (
+                                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-200 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <button 
+                                        onClick={openConfigModal}
+                                        className="w-full px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 text-left font-medium transition-colors border-b border-slate-50"
+                                    >
+                                        <Settings size={16} /> Sắp xếp hiển thị
+                                    </button>
+                                    <button 
+                                        onClick={() => {
+                                            alert("Delete functionality to be implemented");
+                                            setIsMorePopoverOpen(false);
+                                        }}
+                                        className="w-full px-4 py-3 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 text-left font-medium transition-colors"
+                                    >
+                                        <Trash2 size={16} /> Xóa plan
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
 
                 <div className="flex gap-6 border-b border-slate-200 overflow-x-auto">
-                    {[
-                        { id: PlanTab.OVERVIEW, label: 'Overview & Performance' },
-                        { id: PlanTab.STAKEHOLDERS, label: 'Stakeholder Map' },
-                        { id: PlanTab.ANALYSIS, label: 'Strategic Analysis' },
-                        { id: PlanTab.ACTION_PLAN, label: 'Action Plan & Tracking' },
-                        { id: PlanTab.APPROVAL, label: 'Approval' },
-                    ].map((tab) => (
+                    {tabsConfig.filter(t => t.visible).map((tab) => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as PlanTab)}
@@ -134,8 +306,8 @@ const PlanDashboard: React.FC<PlanDashboardProps> = ({ plan, onBack, onUpdatePla
             </div>
 
             <div className="min-h-[500px]">
-                {activeTab === PlanTab.OVERVIEW && <OverviewTab plan={plan} onUpdatePlan={onUpdatePlan} onTabChange={setActiveTab} />}
-                {activeTab === PlanTab.ANALYSIS && <MarketTab plan={plan} />}
+                {activeTab === PlanTab.OVERVIEW && <OverviewTab plan={plan} onUpdatePlan={onUpdatePlan} onTabChange={setActiveTab} visibleSections={visibleSections} />}
+                {activeTab === PlanTab.ANALYSIS && <MarketTab plan={plan} visibleSections={visibleSections} />}
                 {activeTab === PlanTab.STAKEHOLDERS && <StrategyTab plan={plan} />}
                 {activeTab === PlanTab.ACTION_PLAN && <ExecutionTab plan={plan} />}
                 {activeTab === PlanTab.APPROVAL && <ApprovalTab plan={plan} onUpdatePlan={onUpdatePlan} />}
@@ -147,7 +319,7 @@ const PlanDashboard: React.FC<PlanDashboardProps> = ({ plan, onBack, onUpdatePla
                 plan={plan} 
             />
 
-            {/* Modal Edit Main Info - Updated with screenshot styles */}
+            {/* Modal Edit Main Info */}
             <Modal
                 isOpen={isEditMainInfoModalOpen}
                 onClose={() => setIsEditMainInfoModalOpen(false)}
@@ -208,6 +380,89 @@ const PlanDashboard: React.FC<PlanDashboardProps> = ({ plan, onBack, onUpdatePla
                             className="px-10 py-3 bg-blue-600 text-white font-black text-xs rounded-xl hover:bg-blue-700 transition-all shadow-xl shadow-blue-100 disabled:opacity-50 flex items-center gap-2"
                         >
                             <Save size={20} /> Lưu thay đổi
+                        </button>
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Config View Modal */}
+            <Modal
+                isOpen={isConfigModalOpen}
+                onClose={() => setIsConfigModalOpen(false)}
+                title="Sắp xếp hiển thị"
+                maxWidth="max-w-2xl"
+            >
+                <div className="space-y-6">
+                    <p className="text-sm text-slate-500">Tùy chỉnh bật/tắt và sắp xếp thứ tự hiển thị các tab và nội dung chi tiết.</p>
+                    
+                    <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                        {tempTabsConfig.map((tab, index) => (
+                            <div 
+                                key={tab.id} 
+                                draggable
+                                onDragStart={(e) => handleDragStart(e, index)}
+                                onDragEnter={(e) => handleDragEnter(e, index)}
+                                onDragEnd={handleDragEnd}
+                                onDragOver={(e) => e.preventDefault()}
+                                className={`border border-slate-200 rounded-xl bg-white overflow-hidden transition-all ${draggedItemIndex === index ? 'opacity-50 border-dashed border-blue-400' : ''}`}
+                            >
+                                <div className="flex items-center p-3 bg-slate-50 gap-3 cursor-move">
+                                    <div className="text-slate-400 hover:text-slate-600">
+                                        <GripVertical size={20} />
+                                    </div>
+                                    <div className="flex-1 font-bold text-sm text-slate-700">{tab.label}</div>
+                                    
+                                    <div className="flex items-center gap-2">
+                                        <button 
+                                            onClick={() => toggleTabVisibility(index)}
+                                            className={`p-2 rounded-lg transition-colors ${tab.visible ? 'text-blue-600 bg-blue-50' : 'text-slate-400 bg-slate-100'}`}
+                                            title={tab.visible ? 'Hide Tab' : 'Show Tab'}
+                                        >
+                                            {tab.visible ? <Eye size={18} /> : <EyeOff size={18} />}
+                                        </button>
+                                        
+                                        {tab.sections.length > 0 && (
+                                            <button 
+                                                onClick={() => toggleConfigExpand(tab.id)}
+                                                className={`p-2 rounded-lg transition-colors ${expandedTabConfig[tab.id] ? 'bg-slate-200 text-slate-700' : 'hover:bg-slate-200 text-slate-500'}`}
+                                            >
+                                                {expandedTabConfig[tab.id] ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                                
+                                {expandedTabConfig[tab.id] && tab.sections.length > 0 && (
+                                    <div className="p-3 bg-white border-t border-slate-100 space-y-2">
+                                        {tab.sections.map((section, sIndex) => (
+                                            <div key={section.id} className="flex items-center justify-between p-2 pl-4 hover:bg-slate-50 rounded-lg transition-colors">
+                                                <span className="text-sm text-slate-600 font-medium">{section.label}</span>
+                                                <button 
+                                                    onClick={() => toggleSectionVisibility(index, sIndex)}
+                                                    className={`p-1.5 rounded transition-colors ${section.visible ? 'text-blue-600 bg-blue-50' : 'text-slate-400 bg-slate-100'}`}
+                                                >
+                                                    {section.visible ? <Eye size={16} /> : <EyeOff size={16} />}
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="pt-4 flex justify-end items-center gap-4 border-t border-slate-100">
+                        <button 
+                            onClick={() => setIsConfigModalOpen(false)}
+                            className="text-slate-600 hover:text-slate-800 text-sm font-bold transition-colors px-4"
+                        >
+                            Hủy
+                        </button>
+                        <button 
+                            onClick={handleSaveConfig}
+                            className="px-8 py-2.5 bg-blue-600 text-white font-black text-xs rounded-xl hover:bg-blue-700 transition-all shadow-md active:scale-95"
+                        >
+                            Lưu cấu hình
                         </button>
                     </div>
                 </div>
