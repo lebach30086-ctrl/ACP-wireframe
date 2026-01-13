@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Plus, Filter, Search, ChevronRight, TrendingUp, DollarSign, BarChart3, PieChart, Building2, ChevronDown } from 'lucide-react';
+import { Plus, Search, ChevronRight, TrendingUp, DollarSign, BarChart3, PieChart, Building2, ChevronDown } from 'lucide-react';
 import { AccountPlan } from '../types';
 
 interface PlanListProps {
@@ -328,11 +328,6 @@ const PlanList: React.FC<PlanListProps> = ({ onSelectPlan, onCreatePlan, onSelec
                             </select>
                             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
                         </div>
-                        
-                        <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg bg-white text-slate-700 hover:bg-slate-50 text-sm font-medium transition-colors">
-                            <Filter size={16} className="text-slate-400" />
-                            More Filters
-                        </button>
                     </div>
                 </div>
 

@@ -17,17 +17,96 @@ import {
     Filter,
     ChevronDown,
     ChevronRight,
-    Plus
+    Plus,
+    Briefcase,
+    DollarSign,
+    BarChart3
 } from 'lucide-react';
-import { Company } from '../types';
+import { Company, AccountPlan } from '../types';
 
 interface CompanyDetailProps {
     company: Company;
     onBack: () => void;
+    onCreatePlan?: () => void;
+    onSelectPlan?: (plan: AccountPlan) => void;
 }
 
-const CompanyDetail: React.FC<CompanyDetailProps> = ({ company, onBack }) => {
-    const [activeTab, setActiveTab] = useState<'Event' | 'Note' | 'Task'>('Event');
+// Mock Plans for Company Detail View
+const MOCK_COMPANY_PLANS: AccountPlan[] = [
+    { 
+        id: '1', 
+        accountName: 'Digital Transformation 2024', 
+        companyId: '1',
+        companyName: 'Công ty CP Đầu tư TMZ',
+        companySegment: 'Enterprise',
+        fiscalYear: 'FY2024', 
+        startDate: '2024-01-01',
+        endDate: '2024-09-30', 
+        owner: 'John Doe', 
+        status: 'Active', 
+        progress: 65, 
+        industry: 'Hospitality', 
+        revenue: 1200000, 
+        winRate: 45
+    },
+    { 
+        id: '2', 
+        accountName: 'Enterprise Licensing Renewal', 
+        companyId: '1',
+        companyName: 'Công ty CP Đầu tư TMZ',
+        companySegment: 'Enterprise',
+        fiscalYear: 'FY2024', 
+        startDate: '2024-03-01',
+        endDate: '2024-10-01', 
+        owner: 'John Doe', 
+        status: 'Completed', 
+        progress: 100, 
+        industry: 'Software', 
+        revenue: 500000, 
+        winRate: 75 
+    },
+    { 
+        id: '3', 
+        accountName: 'Cloud Migration Strategy', 
+        companyId: '2',
+        companyName: 'Globex Inc',
+        companySegment: 'Corporate',
+        fiscalYear: 'FY2024', 
+        startDate: '2024-02-15',
+        endDate: '2024-10-15',
+        owner: 'Sarah Smith', 
+        status: 'Pending Approval', 
+        progress: 80, 
+        industry: 'Logistics', 
+        revenue: 850000, 
+        winRate: 60 
+    }
+];
+
+const CompanyDetail: React.FC<CompanyDetailProps> = ({ company, onBack, onCreatePlan, onSelectPlan }) => {
+    const [activeTab, setActiveTab] = useState<'Event' | 'Ghi chú' | 'Công việc' | 'Account Planning'>('Event');
+
+    const companyPlans = MOCK_COMPANY_PLANS.filter(p => p.companyId === company.id);
+
+    const getStatusColor = (status: string) => {
+        switch(status) {
+            case 'Active': return 'bg-green-100 text-green-700 border-green-200';
+            case 'Draft': return 'bg-slate-100 text-slate-700 border-slate-200';
+            case 'Pending Approval': return 'bg-blue-100 text-blue-700 border-blue-200';
+            case 'Needs Revision': return 'bg-red-100 text-red-700 border-red-200';
+            case 'Completed': return 'bg-slate-200 text-slate-700 border-slate-200';
+            default: return 'bg-slate-100 text-slate-700 border-slate-200';
+        }
+    };
+
+    const formatCurrency = (value: number) => {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            notation: 'compact',
+            maximumFractionDigits: 1
+        }).format(value);
+    };
 
     return (
         <div className="flex flex-col h-full animate-fade-in">
@@ -125,15 +204,15 @@ const CompanyDetail: React.FC<CompanyDetailProps> = ({ company, onBack }) => {
                         </div>
                     </div>
 
-                    {/* MIDDLE COLUMN - Timeline */}
+                    {/* MIDDLE COLUMN - Tabs Content */}
                     <div className="flex-1 flex flex-col min-w-0 border-r border-slate-200 bg-white">
                         {/* Tabs */}
-                        <div className="flex border-b border-slate-200">
-                            {['Event', 'Ghi chú', 'Công việc'].map(tab => (
+                        <div className="flex border-b border-slate-200 overflow-x-auto">
+                            {['Event', 'Ghi chú', 'Công việc', 'Account Planning'].map(tab => (
                                 <button
                                     key={tab}
                                     onClick={() => setActiveTab(tab as any)}
-                                    className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === tab ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                                    className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === tab ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
                                 >
                                     {tab}
                                 </button>
@@ -143,71 +222,141 @@ const CompanyDetail: React.FC<CompanyDetailProps> = ({ company, onBack }) => {
                             </div>
                         </div>
                         
-                        {/* Filters */}
-                        <div className="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-                             <div className="bg-white border border-slate-300 rounded px-3 py-1.5 flex items-center gap-2 text-sm text-slate-600 shadow-sm cursor-pointer hover:border-slate-400">
-                                 <Calendar size={14} />
-                                 <span>01/05/2022 - 30/06/2022</span>
-                             </div>
-                             <div className="flex gap-1">
-                                 <button className="p-1.5 bg-white border border-slate-300 rounded text-slate-500 hover:text-slate-700 shadow-sm"><Filter size={14} /></button>
-                                 <button className="p-1.5 bg-white border border-slate-300 rounded text-slate-500 hover:text-slate-700 shadow-sm"><ChevronDown size={14} /></button>
-                             </div>
-                        </div>
+                        {activeTab === 'Account Planning' ? (
+                            <div className="flex-1 overflow-y-auto p-6 bg-slate-50/30">
+                                <div className="flex justify-between items-center mb-6">
+                                    <div>
+                                        <h3 className="font-bold text-slate-800 text-lg">Danh sách kế hoạch</h3>
+                                        <p className="text-xs text-slate-500 mt-1">Quản lý các kế hoạch chiến lược cho khách hàng này</p>
+                                    </div>
+                                    <button 
+                                        onClick={onCreatePlan} 
+                                        className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold shadow-md shadow-blue-100 hover:bg-blue-700 transition-all active:scale-95"
+                                    >
+                                        <Plus size={16} /> Thêm kế hoạch
+                                    </button>
+                                </div>
 
-                        {/* Breadcrumb row inside content */}
-                        <div className="px-6 py-3 flex justify-between items-center text-xs text-slate-500 border-b border-slate-100">
-                            <div className="flex items-center gap-1 font-medium">
-                                <span>Doanh Nghiệp</span>
-                                <ChevronRight size={12} />
+                                {companyPlans.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center h-64 text-center border-2 border-dashed border-slate-200 rounded-xl bg-white/50">
+                                        <Briefcase size={32} className="text-slate-300 mb-3" />
+                                        <p className="text-slate-500 font-medium text-sm">Chưa có kế hoạch nào.</p>
+                                        <button onClick={onCreatePlan} className="mt-2 text-blue-600 text-sm font-bold hover:underline">Tạo kế hoạch đầu tiên</button>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {companyPlans.map(plan => (
+                                            <div 
+                                                key={plan.id} 
+                                                onClick={() => onSelectPlan?.(plan)}
+                                                className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md hover:border-blue-300 transition-all cursor-pointer group"
+                                            >
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <div>
+                                                        <h4 className="font-bold text-slate-800 text-base group-hover:text-blue-600 transition-colors mb-1">{plan.accountName}</h4>
+                                                        <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+                                                            <Calendar size={12} className="text-slate-400" />
+                                                            <span>{plan.startDate || 'N/A'} - {plan.endDate || 'N/A'}</span>
+                                                        </div>
+                                                    </div>
+                                                    <span className={`px-2.5 py-1 rounded text-[10px] font-black uppercase tracking-wider border ${getStatusColor(plan.status)}`}>
+                                                        {plan.status}
+                                                    </span>
+                                                </div>
+                                                
+                                                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-50">
+                                                    <div>
+                                                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
+                                                            <DollarSign size={10} /> Revenue
+                                                        </div>
+                                                        <div className="text-sm font-bold text-slate-700">{formatCurrency(plan.revenue)}</div>
+                                                    </div>
+                                                    <div>
+                                                        <div className="flex justify-between items-center mb-1">
+                                                            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                                                                <BarChart3 size={10} /> Progress
+                                                            </div>
+                                                            <span className="text-[10px] font-bold text-blue-600">{plan.progress}%</span>
+                                                        </div>
+                                                        <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                                            <div className="h-full bg-blue-500 rounded-full transition-all duration-500" style={{width: `${plan.progress}%`}}></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
-                            <div className="flex items-center gap-1">
-                                <ChevronLeft size={12} />
-                                <span>Công ty</span>
-                            </div>
-                        </div>
+                        ) : (
+                            <>
+                                {/* Filters - Shared for other tabs */}
+                                <div className="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                                     <div className="bg-white border border-slate-300 rounded px-3 py-1.5 flex items-center gap-2 text-sm text-slate-600 shadow-sm cursor-pointer hover:border-slate-400">
+                                         <Calendar size={14} />
+                                         <span>01/05/2022 - 30/06/2022</span>
+                                     </div>
+                                     <div className="flex gap-1">
+                                         <button className="p-1.5 bg-white border border-slate-300 rounded text-slate-500 hover:text-slate-700 shadow-sm"><Filter size={14} /></button>
+                                         <button className="p-1.5 bg-white border border-slate-300 rounded text-slate-500 hover:text-slate-700 shadow-sm"><ChevronDown size={14} /></button>
+                                     </div>
+                                </div>
 
-                        {/* Timeline Content */}
-                        <div className="flex-1 overflow-y-auto p-6 bg-slate-50/30">
-                            <div className="flex justify-center mb-6">
-                                <span className="bg-slate-200 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Tháng 06/2022</span>
-                            </div>
-                            
-                            <div className="space-y-4 relative before:absolute before:left-[27px] before:top-0 before:bottom-0 before:w-px before:bg-slate-200 before:border-l before:border-dashed">
-                                <TimelineItem 
-                                    icon={<Building2 size={16} />} 
-                                    title="Tạo Công ty"
-                                    subtitle={`Công ty: ${company.name}`}
-                                    time="30/06/2022 09:00"
-                                />
-                                <TimelineItem 
-                                    icon={<Building2 size={16} />} 
-                                    title="Cập nhật thông tin Công ty"
-                                    time="30/06/2022 09:00"
-                                />
-                                <TimelineItem 
-                                    icon={<LinkIcon size={16} />} 
-                                    title="Gắn liên hệ giữa Công ty và Cơ hội bán"
-                                    time="30/06/2022 09:00"
-                                />
-                                <TimelineItem 
-                                    icon={<Bell size={16} />} 
-                                    title="Gửi Push in-app đến Nguyễn Đặng Khánh Linh"
-                                    subtitle="Mobile App: MOBIOSHOP"
-                                    time="30/06/2022 09:00"
-                                />
-                                <TimelineItem 
-                                    icon={<Unlink size={16} />} 
-                                    title="Gỡ liên hệ giữa Công ty và Cơ hội bán"
-                                    time="30/06/2022 09:00"
-                                />
-                                <TimelineItem 
-                                    icon={<LinkIcon size={16} />} 
-                                    title="Gắn liên hệ giữa Công ty và Ticket"
-                                    time="30/06/2022 09:00"
-                                />
-                            </div>
-                        </div>
+                                {/* Breadcrumb row inside content */}
+                                <div className="px-6 py-3 flex justify-between items-center text-xs text-slate-500 border-b border-slate-100">
+                                    <div className="flex items-center gap-1 font-medium">
+                                        <span>Doanh Nghiệp</span>
+                                        <ChevronRight size={12} />
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                        <ChevronLeft size={12} />
+                                        <span>Công ty</span>
+                                    </div>
+                                </div>
+
+                                {/* Timeline Content */}
+                                <div className="flex-1 overflow-y-auto p-6 bg-slate-50/30">
+                                    <div className="flex justify-center mb-6">
+                                        <span className="bg-slate-200 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Tháng 06/2022</span>
+                                    </div>
+                                    
+                                    <div className="space-y-4 relative before:absolute before:left-[27px] before:top-0 before:bottom-0 before:w-px before:bg-slate-200 before:border-l before:border-dashed">
+                                        <TimelineItem 
+                                            icon={<Building2 size={16} />} 
+                                            title="Tạo Công ty"
+                                            subtitle={`Công ty: ${company.name}`}
+                                            time="30/06/2022 09:00"
+                                        />
+                                        <TimelineItem 
+                                            icon={<Building2 size={16} />} 
+                                            title="Cập nhật thông tin Công ty"
+                                            time="30/06/2022 09:00"
+                                        />
+                                        <TimelineItem 
+                                            icon={<LinkIcon size={16} />} 
+                                            title="Gắn liên hệ giữa Công ty và Cơ hội bán"
+                                            time="30/06/2022 09:00"
+                                        />
+                                        <TimelineItem 
+                                            icon={<Bell size={16} />} 
+                                            title="Gửi Push in-app đến Nguyễn Đặng Khánh Linh"
+                                            subtitle="Mobile App: MOBIOSHOP"
+                                            time="30/06/2022 09:00"
+                                        />
+                                        <TimelineItem 
+                                            icon={<Unlink size={16} />} 
+                                            title="Gỡ liên hệ giữa Công ty và Cơ hội bán"
+                                            time="30/06/2022 09:00"
+                                        />
+                                        <TimelineItem 
+                                            icon={<LinkIcon size={16} />} 
+                                            title="Gắn liên hệ giữa Công ty và Ticket"
+                                            time="30/06/2022 09:00"
+                                        />
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
 
                     {/* RIGHT COLUMN - Related Items */}

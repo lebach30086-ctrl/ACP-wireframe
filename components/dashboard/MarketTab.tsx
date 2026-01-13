@@ -45,7 +45,8 @@ import {
     ChevronRight,
     Info,
     Edit3,
-    ChevronDown
+    ChevronDown,
+    Calendar
 } from 'lucide-react';
 import { AccountPlan } from '../../types';
 import Modal from '../ui/Modal';
@@ -448,7 +449,7 @@ const MarketTab: React.FC<MarketTabProps> = ({ plan, visibleSections }) => {
                         <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2"><Search size={20} className="text-purple-600" /> SWOT Matrix</h3>
                         <button onClick={() => { setSwotEdit({ strengths: swot.strengths.join('. '), weaknesses: swot.weaknesses.join('. '), opportunities: swot.opportunities.join('. '), threats: swot.threats.join('. ') }); setIsSwotModalOpen(true); }} className="text-xs text-blue-600 font-bold hover:underline">Edit SWOT</button>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                         <div className="bg-green-50 border border-green-100 p-4 rounded-xl"><span className="font-black text-green-700 block mb-2 uppercase tracking-widest">STRENGTHS</span><ul className="space-y-1.5 text-green-900 list-none font-medium">{swot.strengths.map((s, i) => (<li key={i} className="flex gap-2"><span className="text-green-500">•</span> {s}</li>))}</ul></div>
                         <div className="bg-red-50 border border-red-100 p-4 rounded-xl"><span className="font-black text-red-700 block mb-2 uppercase tracking-widest">WEAKNESSES</span><ul className="space-y-1.5 text-red-900 list-none font-medium">{swot.weaknesses.map((s, i) => (<li key={i} className="flex gap-2"><span className="text-green-500">•</span> {s}</li>))}</ul></div>
                         <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl"><span className="font-black text-blue-700 block mb-2 uppercase tracking-widest">OPPORTUNITIES</span><ul className="space-y-1.5 text-blue-900 list-none font-medium">{swot.opportunities.map((s, i) => (<li key={i} className="flex gap-2"><span className="text-blue-500">•</span> {s}</li>))}</ul></div>
@@ -632,7 +633,25 @@ const MarketTab: React.FC<MarketTabProps> = ({ plan, visibleSections }) => {
                     {isProductPickerOpen && (<div className="absolute z-20 mt-2 w-full bg-white border border-slate-200 rounded-2xl shadow-2xl max-h-60 overflow-y-auto animate-in fade-in slide-in-from-top-2">{DETAILED_PRODUCTS.filter(p => p.parentCategoryId === selectedCellInfo?.prodId).map(prod => (<button key={prod.id} onClick={() => handlePickProductForOpp(prod)} className={`w-full text-left p-4 hover:bg-slate-50 flex items-center justify-between transition-colors border-b border-slate-50 last:border-0 ${oppForm.detailedProductId === prod.id ? 'bg-blue-50/50' : ''}`}><span className="text-sm font-bold text-slate-700">{prod.name}</span>{oppForm.detailedProductId === prod.id && <CheckCircle2 size={16} className="text-blue-600" />}</button>))}</div>)}</div></div>
                     <div className="space-y-2"><label className="text-[11px] font-black text-slate-400 uppercase tracking-widest px-1">Opportunity Name</label><input type="text" value={oppForm.name} onChange={(e) => setOppForm({...oppForm, name: e.target.value})} className="w-full px-4 py-3 border border-slate-200 bg-white text-slate-900 rounded-xl font-bold text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all" /></div>
                     <div className="space-y-2"><label className="text-[11px] font-black text-slate-400 uppercase tracking-widest px-1">Expected Amount</label><div className="relative"><span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span><input type="number" value={oppForm.amount} onChange={(e) => setOppForm({...oppForm, amount: e.target.value})} className="w-full pl-10 pr-4 py-3 border border-slate-200 bg-white text-slate-900 rounded-xl font-bold text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all" /></div></div>
-                    <div className="grid grid-cols-2 gap-4"><div className="space-y-2"><label className="text-[11px] font-black text-slate-400 uppercase tracking-widest px-1">Stage</label><select value={oppForm.stage} onChange={(e) => setOppForm({...oppForm, stage: e.target.value})} className="w-full px-4 py-3 border border-slate-200 bg-white text-slate-900 rounded-xl font-bold text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none"><option value="Qualification">Qualification</option><option value="Discovery">Discovery</option><option value="Proposal">Proposal</option><option value="Negotiation">Negotiation</option></select></div><div className="space-y-2"><label className="text-[11px] font-black text-slate-400 uppercase tracking-widest px-1">Target Close Date</label><input type="date" value={oppForm.closeDate} onChange={(e) => setOppForm({...oppForm, closeDate: e.target.value})} className="w-full px-4 py-3 border border-slate-200 bg-white text-slate-900 rounded-xl font-bold text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all" /></div></div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest px-1">Stage</label>
+                            <select value={oppForm.stage} onChange={(e) => setOppForm({...oppForm, stage: e.target.value})} className="w-full px-4 py-3 border border-slate-200 bg-white text-slate-900 rounded-xl font-bold text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none"><option value="Qualification">Qualification</option><option value="Discovery">Discovery</option><option value="Proposal">Proposal</option><option value="Negotiation">Negotiation</option></select>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest px-1">Target Close Date</label>
+                            <div className="relative">
+                                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
+                                <input 
+                                    type="date" 
+                                    value={oppForm.closeDate} 
+                                    onChange={(e) => setOppForm({...oppForm, closeDate: e.target.value})} 
+                                    onClick={(e) => e.currentTarget.showPicker && e.currentTarget.showPicker()}
+                                    className="w-full pl-12 pr-4 py-3 border border-slate-200 bg-white text-slate-900 rounded-xl font-bold text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all" 
+                                />
+                            </div>
+                        </div>
+                    </div>
                     <div className="pt-5 flex justify-end gap-3 border-t border-slate-100"><button onClick={() => setIsOppModalOpen(false)} className="px-6 py-2.5 text-slate-600 hover:bg-slate-100 rounded-xl font-black text-sm transition-colors">Cancel</button><button onClick={() => setIsOppModalOpen(false)} disabled={!oppForm.detailedProductId} className="px-8 py-2.5 bg-blue-600 text-white hover:bg-blue-700 rounded-xl font-black text-sm shadow-xl shadow-blue-200 flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50"><Briefcase size={18} /> Create Opportunity</button></div>
                 </div>
             </Modal>

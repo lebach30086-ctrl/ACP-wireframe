@@ -44,6 +44,7 @@ interface OverviewTabProps {
     onUpdatePlan: (fields: Partial<AccountPlan>) => void;
     onTabChange?: (tab: PlanTab) => void;
     visibleSections?: Record<string, boolean>;
+    onGoToCompany?: (companyId: string) => void;
 }
 
 const REVENUE_DATA = [
@@ -145,7 +146,7 @@ const MOCK_OPPORTUNITIES: Opportunity[] = [
     }
 ];
 
-const OverviewTab: React.FC<OverviewTabProps> = ({ plan, onUpdatePlan, onTabChange, visibleSections }) => {
+const OverviewTab: React.FC<OverviewTabProps> = ({ plan, onUpdatePlan, onTabChange, visibleSections, onGoToCompany }) => {
     const isNew = plan.isNew;
     const [isProfileExpanded, setIsProfileExpanded] = useState(true);
     
@@ -280,7 +281,14 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ plan, onUpdatePlan, onTabChan
                             <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
                                 <div className="flex justify-between items-center pb-2 border-b border-slate-50">
                                     <span className="text-[11px] font-bold text-slate-400 uppercase tracking-tight">Account</span>
-                                    <span className="font-bold text-blue-600 text-[13px]">{plan.companyName}</span>
+                                    <button 
+                                        onClick={() => onGoToCompany?.(plan.companyId)}
+                                        className="font-bold text-blue-600 text-[13px] hover:underline flex items-center gap-1 group/link text-right"
+                                        title="View Company Details"
+                                    >
+                                        {plan.companyName}
+                                        <ArrowUpRight size={14} className="opacity-0 group-hover/link:opacity-100 transition-opacity" />
+                                    </button>
                                 </div>
                                 <div className="flex justify-between items-center pb-2 border-b border-slate-50">
                                     <span className="text-[11px] font-bold text-slate-400 uppercase tracking-tight">Industry</span>

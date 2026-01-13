@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Layout from './components/Layout';
 import PlanList from './components/PlanList';
@@ -96,6 +95,7 @@ function App() {
           plan={selectedPlan} 
           onBack={handleBackToPlans} 
           onUpdatePlan={handleUpdatePlan}
+          onGoToCompany={handleSelectCompanyById}
         />
       )}
 
@@ -106,7 +106,9 @@ function App() {
       {view === 'company-detail' && selectedCompany && (
         <CompanyDetail 
             company={selectedCompany} 
-            onBack={handleBackToCompanies} 
+            onBack={handleBackToCompanies}
+            onCreatePlan={() => setShowWizard(true)}
+            onSelectPlan={handleSelectPlan}
         />
       )}
 

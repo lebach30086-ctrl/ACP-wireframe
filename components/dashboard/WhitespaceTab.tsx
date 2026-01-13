@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AccountPlan } from '../../types';
@@ -15,7 +14,8 @@ import {
     ChevronRight,
     Info,
     Edit3,
-    ChevronDown
+    ChevronDown,
+    Calendar
 } from 'lucide-react';
 import Modal from '../ui/Modal';
 
@@ -678,12 +678,16 @@ const WhitespaceTab: React.FC<WhitespaceTabProps> = ({ plan }) => {
                         </div>
                         <div className="space-y-2">
                             <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest px-1">Target Close Date</label>
-                            <input 
-                                type="date" 
-                                value={oppForm.closeDate}
-                                onChange={(e) => setOppForm({...oppForm, closeDate: e.target.value})}
-                                className="w-full px-4 py-3 border border-slate-200 bg-white text-slate-900 rounded-xl font-bold text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                            />
+                            <div className="relative">
+                                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
+                                <input 
+                                    type="date" 
+                                    value={oppForm.closeDate}
+                                    onChange={(e) => setOppForm({...oppForm, closeDate: e.target.value})}
+                                    onClick={(e) => e.currentTarget.showPicker && e.currentTarget.showPicker()}
+                                    className="w-full pl-12 pr-4 py-3 border border-slate-200 bg-white text-slate-900 rounded-xl font-bold text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                />
+                            </div>
                         </div>
                     </div>
 

@@ -25,6 +25,7 @@ interface PlanDashboardProps {
     plan: AccountPlan;
     onBack: () => void;
     onUpdatePlan: (fields: Partial<AccountPlan>) => void;
+    onGoToCompany?: (companyId: string) => void;
 }
 
 interface SectionConfig {
@@ -85,7 +86,7 @@ const INITIAL_TABS_CONFIG: TabConfig[] = [
     }
 ];
 
-const PlanDashboard: React.FC<PlanDashboardProps> = ({ plan, onBack, onUpdatePlan }) => {
+const PlanDashboard: React.FC<PlanDashboardProps> = ({ plan, onBack, onUpdatePlan, onGoToCompany }) => {
     const [activeTab, setActiveTab] = useState<PlanTab>(PlanTab.OVERVIEW);
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     const [isEditMainInfoModalOpen, setIsEditMainInfoModalOpen] = useState(false);
@@ -320,7 +321,15 @@ const PlanDashboard: React.FC<PlanDashboardProps> = ({ plan, onBack, onUpdatePla
             </div>
 
             <div className="min-h-[500px]">
-                {activeTab === PlanTab.OVERVIEW && <OverviewTab plan={plan} onUpdatePlan={onUpdatePlan} onTabChange={setActiveTab} visibleSections={visibleSections} />}
+                {activeTab === PlanTab.OVERVIEW && (
+                    <OverviewTab 
+                        plan={plan} 
+                        onUpdatePlan={onUpdatePlan} 
+                        onTabChange={setActiveTab} 
+                        visibleSections={visibleSections} 
+                        onGoToCompany={onGoToCompany}
+                    />
+                )}
                 {activeTab === PlanTab.ANALYSIS && <MarketTab plan={plan} visibleSections={visibleSections} />}
                 {activeTab === PlanTab.STAKEHOLDERS && <StrategyTab plan={plan} />}
                 {activeTab === PlanTab.ACTION_PLAN && <ExecutionTab plan={plan} />}
