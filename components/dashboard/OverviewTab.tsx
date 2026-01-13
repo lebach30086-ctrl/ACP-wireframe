@@ -568,121 +568,141 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ plan, onUpdatePlan, onTabChan
                              <h3 className="text-lg font-bold text-slate-800">
                                  Action Plan Progress
                              </h3>
-                             <button 
-                                onClick={() => onTabChange?.(PlanTab.ACTION_PLAN)}
-                                className="text-[11px] font-black text-blue-600 uppercase hover:underline"
-                            >
-                                VIEW DETAILS
-                            </button>
+                             {!isNew && (
+                                <button 
+                                    onClick={() => onTabChange?.(PlanTab.ACTION_PLAN)}
+                                    className="text-[11px] font-black text-blue-600 uppercase hover:underline"
+                                >
+                                    VIEW DETAILS
+                                </button>
+                             )}
                         </div>
 
-                        {/* Overall Plan Progress Box */}
-                        {!isNew && (
-                            <div className="mb-10 p-6 bg-slate-50 rounded-2xl border border-slate-100 shadow-sm">
-                                <div className="flex justify-between items-start mb-4">
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-[13px] font-black text-slate-700 uppercase tracking-widest">OVERALL PLAN PROGRESS</span>
-                                    </div>
-                                    <span className="text-3xl font-black text-blue-600 leading-none">{overallProgress}%</span>
+                        {isNew ? (
+                            <div className="py-12 flex flex-col items-center justify-center text-center">
+                                <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+                                    <CheckSquare size={32} className="text-slate-300" />
                                 </div>
-                                <div className="h-3 w-full bg-white border border-slate-200 rounded-full overflow-hidden shadow-inner mb-3">
-                                    <div 
-                                        className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-1000 ease-out rounded-full" 
-                                        style={{ width: `${overallProgress}%` }}
-                                    ></div>
-                                </div>
-                                <div className="flex items-center justify-between text-[11px] font-medium text-slate-400 uppercase tracking-tighter">
-                                    <span>{taskStats.completed}/{totalTasks} Goal Complete</span>
-                                </div>
+                                <h4 className="text-sm font-bold text-slate-700 mb-1">Chưa có kế hoạch hành động</h4>
+                                <p className="text-xs text-slate-500 max-w-xs mb-4">
+                                    Thiết lập các mục tiêu và công việc cụ thể để bắt đầu theo dõi tiến độ.
+                                </p>
+                                <button 
+                                    onClick={() => onTabChange?.(PlanTab.ACTION_PLAN)}
+                                    className="px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition-colors"
+                                >
+                                    Tạo kế hoạch hành động
+                                </button>
                             </div>
+                        ) : (
+                            <>
+                                {/* Overall Plan Progress Box */}
+                                <div className="mb-10 p-6 bg-slate-50 rounded-2xl border border-slate-100 shadow-sm">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-[13px] font-black text-slate-700 uppercase tracking-widest">OVERALL PLAN PROGRESS</span>
+                                        </div>
+                                        <span className="text-3xl font-black text-blue-600 leading-none">{overallProgress}%</span>
+                                    </div>
+                                    <div className="h-3 w-full bg-white border border-slate-200 rounded-full overflow-hidden shadow-inner mb-3">
+                                        <div 
+                                            className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-1000 ease-out rounded-full" 
+                                            style={{ width: `${overallProgress}%` }}
+                                        ></div>
+                                    </div>
+                                    <div className="flex items-center justify-between text-[11px] font-medium text-slate-400 uppercase tracking-tighter">
+                                        <span>{taskStats.completed}/{totalTasks} Goal Complete</span>
+                                    </div>
+                                </div>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+                                    <div className="md:col-span-7 flex flex-col sm:flex-row items-center gap-8">
+                                        <div className="relative w-32 h-32 flex-shrink-0">
+                                            <svg viewBox="0 0 100 100" className="transform -rotate-90 w-full h-full">
+                                                <circle cx="50" cy="50" r="40" stroke="#f8fafc" strokeWidth="10" fill="none" />
+                                                <circle 
+                                                    cx="50" cy="50" r="40" stroke="#22c55e" strokeWidth="10" fill="none" 
+                                                    strokeDasharray={`${(taskStats.completed/totalTasks)*251.2} 251.2`}
+                                                    strokeDashoffset="0"
+                                                    strokeLinecap="round" 
+                                                />
+                                                <circle 
+                                                    cx="50" cy="50" r="40" stroke="#3b82f6" strokeWidth="10" fill="none" 
+                                                    strokeDasharray={`${(taskStats.inProgress/totalTasks)*251.2} 251.2`}
+                                                    strokeDashoffset={`-${(taskStats.completed/totalTasks)*251.2}`}
+                                                    strokeLinecap="round" 
+                                                />
+                                                <circle 
+                                                    cx="50" cy="50" r="40" stroke="#ef4444" strokeWidth="10" fill="none" 
+                                                    strokeDasharray={`${(taskStats.overdue/totalTasks)*251.2} 251.2`}
+                                                    strokeDashoffset={`-${((taskStats.completed + taskStats.inProgress)/totalTasks)*251.2}`}
+                                                    strokeLinecap="round" 
+                                                />
+                                                <circle 
+                                                    cx="50" cy="50" r="40" stroke="#e2e8f0" strokeWidth="10" fill="none" 
+                                                    strokeDasharray={`${(taskStats.toDo/totalTasks)*251.2} 251.2`}
+                                                    strokeDashoffset={`-${((taskStats.completed + taskStats.inProgress + taskStats.overdue)/totalTasks)*251.2}`}
+                                                    strokeLinecap="round" 
+                                                />
+                                            </svg>
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                                <span className="text-2xl font-black text-slate-800 leading-none">{totalTasks}</span>
+                                                <span className="text-[9px] text-slate-400 font-black uppercase tracking-widest mt-1">Tasks</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex-1 w-full grid grid-cols-2 gap-4">
+                                            <div className="p-3 bg-slate-50/50 rounded-xl border border-slate-100">
+                                                <div className="flex items-center gap-1.5 mb-1">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                                                    <div className="text-[9px] font-black text-slate-400 uppercase tracking-tight">Done</div>
+                                                </div>
+                                                <div className="text-sm font-black text-slate-800 ml-3">{taskStats.completed}</div>
+                                            </div>
+                                            <div className="p-3 bg-slate-50/50 rounded-xl border border-slate-100">
+                                                <div className="flex items-center gap-1.5 mb-1">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                                                    <div className="text-[9px] font-black text-slate-400 uppercase tracking-tight">Active</div>
+                                                </div>
+                                                <div className="text-sm font-black text-slate-800 ml-3">{taskStats.inProgress}</div>
+                                            </div>
+                                            <div className="p-3 bg-slate-50/50 rounded-xl border border-slate-100">
+                                                <div className="flex items-center gap-1.5 mb-1">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
+                                                    <div className="text-[9px] font-black text-slate-400 uppercase tracking-tight">Late</div>
+                                                </div>
+                                                <div className="text-sm font-black text-slate-800 ml-3">{taskStats.overdue}</div>
+                                            </div>
+                                            <div className="p-3 bg-slate-50/50 rounded-xl border border-slate-100">
+                                                <div className="flex items-center gap-1.5 mb-1">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
+                                                    <div className="text-[9px] font-black text-slate-400 uppercase tracking-tight">Wait</div>
+                                                </div>
+                                                <div className="text-sm font-black text-slate-800 ml-3">{taskStats.toDo}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="md:col-span-5 space-y-3 border-l border-slate-100 pl-8">
+                                        <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Upcoming</h4>
+                                        <div className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 cursor-pointer">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-[12px] font-bold text-slate-800 truncate">Finalize Q3 Contract</p>
+                                                <p className="text-[10px] text-slate-400 font-bold uppercase mt-0.5 tracking-tight">Tomorrow • JD</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 cursor-pointer">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-slate-300 mt-1.5 shrink-0"></div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-[12px] font-bold text-slate-800 truncate">Executive Briefing Prep</p>
+                                                <p className="text-[10px] text-slate-400 font-bold uppercase mt-0.5 tracking-tight">Oct 25 • SM</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </>
                         )}
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-                            <div className="md:col-span-7 flex flex-col sm:flex-row items-center gap-8">
-                                <div className="relative w-32 h-32 flex-shrink-0">
-                                    <svg viewBox="0 0 100 100" className="transform -rotate-90 w-full h-full">
-                                        <circle cx="50" cy="50" r="40" stroke="#f8fafc" strokeWidth="10" fill="none" />
-                                        <circle 
-                                            cx="50" cy="50" r="40" stroke="#22c55e" strokeWidth="10" fill="none" 
-                                            strokeDasharray={`${(taskStats.completed/totalTasks)*251.2} 251.2`}
-                                            strokeDashoffset="0"
-                                            strokeLinecap="round" 
-                                        />
-                                        <circle 
-                                            cx="50" cy="50" r="40" stroke="#3b82f6" strokeWidth="10" fill="none" 
-                                            strokeDasharray={`${(taskStats.inProgress/totalTasks)*251.2} 251.2`}
-                                            strokeDashoffset={`-${(taskStats.completed/totalTasks)*251.2}`}
-                                            strokeLinecap="round" 
-                                        />
-                                        <circle 
-                                            cx="50" cy="50" r="40" stroke="#ef4444" strokeWidth="10" fill="none" 
-                                            strokeDasharray={`${(taskStats.overdue/totalTasks)*251.2} 251.2`}
-                                            strokeDashoffset={`-${((taskStats.completed + taskStats.inProgress)/totalTasks)*251.2}`}
-                                            strokeLinecap="round" 
-                                        />
-                                        <circle 
-                                            cx="50" cy="50" r="40" stroke="#e2e8f0" strokeWidth="10" fill="none" 
-                                            strokeDasharray={`${(taskStats.toDo/totalTasks)*251.2} 251.2`}
-                                            strokeDashoffset={`-${((taskStats.completed + taskStats.inProgress + taskStats.overdue)/totalTasks)*251.2}`}
-                                            strokeLinecap="round" 
-                                        />
-                                    </svg>
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                        <span className="text-2xl font-black text-slate-800 leading-none">{totalTasks}</span>
-                                        <span className="text-[9px] text-slate-400 font-black uppercase tracking-widest mt-1">Tasks</span>
-                                    </div>
-                                </div>
-
-                                <div className="flex-1 w-full grid grid-cols-2 gap-4">
-                                    <div className="p-3 bg-slate-50/50 rounded-xl border border-slate-100">
-                                        <div className="flex items-center gap-1.5 mb-1">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                                            <div className="text-[9px] font-black text-slate-400 uppercase tracking-tight">Done</div>
-                                        </div>
-                                        <div className="text-sm font-black text-slate-800 ml-3">{taskStats.completed}</div>
-                                    </div>
-                                    <div className="p-3 bg-slate-50/50 rounded-xl border border-slate-100">
-                                        <div className="flex items-center gap-1.5 mb-1">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                                            <div className="text-[9px] font-black text-slate-400 uppercase tracking-tight">Active</div>
-                                        </div>
-                                        <div className="text-sm font-black text-slate-800 ml-3">{taskStats.inProgress}</div>
-                                    </div>
-                                    <div className="p-3 bg-slate-50/50 rounded-xl border border-slate-100">
-                                        <div className="flex items-center gap-1.5 mb-1">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
-                                            <div className="text-[9px] font-black text-slate-400 uppercase tracking-tight">Late</div>
-                                        </div>
-                                        <div className="text-sm font-black text-slate-800 ml-3">{taskStats.overdue}</div>
-                                    </div>
-                                    <div className="p-3 bg-slate-50/50 rounded-xl border border-slate-100">
-                                        <div className="flex items-center gap-1.5 mb-1">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
-                                            <div className="text-[9px] font-black text-slate-400 uppercase tracking-tight">Wait</div>
-                                        </div>
-                                        <div className="text-sm font-black text-slate-800 ml-3">{taskStats.toDo}</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="md:col-span-5 space-y-3 border-l border-slate-100 pl-8">
-                                <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Upcoming</h4>
-                                <div className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 cursor-pointer">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-[12px] font-bold text-slate-800 truncate">Finalize Q3 Contract</p>
-                                        <p className="text-[10px] text-slate-400 font-bold uppercase mt-0.5 tracking-tight">Tomorrow • JD</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 cursor-pointer">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-slate-300 mt-1.5 shrink-0"></div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-[12px] font-bold text-slate-800 truncate">Executive Briefing Prep</p>
-                                        <p className="text-[10px] text-slate-400 font-bold uppercase mt-0.5 tracking-tight">Oct 25 • SM</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 )}
 
@@ -692,78 +712,92 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ plan, onUpdatePlan, onTabChan
                         <div className="flex justify-between items-center mb-4">
                             <div>
                                 <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                                    <DollarSign size={20} className="text-green-600" />
+                                    <DollarSign size={20} className={isNew ? "text-slate-400" : "text-green-600"} />
                                     Revenue Performance
                                 </h3>
-                                <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mt-1">Actual vs Target Summary (k USD)</p>
+                                {!isNew && <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mt-1">Actual vs Target Summary (k USD)</p>}
                             </div>
-                            <div className="flex flex-col items-end">
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">TOTAL GOAL</span>
-                                <span className="text-xl font-black text-slate-800">${totalTarget}k</span>
-                            </div>
+                            {!isNew && (
+                                <div className="flex flex-col items-end">
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">TOTAL GOAL</span>
+                                    <span className="text-xl font-black text-slate-800">${totalTarget}k</span>
+                                </div>
+                            )}
                         </div>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center mt-4">
-                            <div className="relative h-60 w-full flex items-center justify-center">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <PieChart>
-                                        <Pie
-                                            data={donutData}
-                                            cx="50%"
-                                            cy="50%"
-                                            innerRadius={65}
-                                            outerRadius={90}
-                                            paddingAngle={4}
-                                            dataKey="value"
-                                            stroke="none"
-                                            startAngle={90}
-                                            endAngle={-270}
-                                        >
-                                            {donutData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={entry.color} />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip 
-                                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 / 0.1)', fontSize: '11px', fontWeight: 'bold' }}
-                                        />
-                                    </PieChart>
-                                </ResponsiveContainer>
-                                {/* Center Value */}
-                                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                    <span className="text-3xl font-black text-blue-600 leading-none">{revenueProgressPercent}%</span>
-                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">ACHIEVED</span>
+                        {isNew ? (
+                            <div className="h-[260px] flex flex-col items-center justify-center text-center border-2 border-dashed border-slate-100 rounded-xl bg-slate-50/30">
+                                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm mb-3">
+                                    <BarChart2 size={24} className="text-slate-300" />
+                                </div>
+                                <p className="text-sm font-bold text-slate-600">Chưa có dữ liệu doanh thu</p>
+                                <p className="text-xs text-slate-400 mt-1 max-w-xs">
+                                    Dữ liệu sẽ hiển thị khi kế hoạch được kích hoạt và bắt đầu ghi nhận kết quả.
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center mt-4">
+                                <div className="relative h-60 w-full flex items-center justify-center">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie
+                                                data={donutData}
+                                                cx="50%"
+                                                cy="50%"
+                                                innerRadius={65}
+                                                outerRadius={90}
+                                                paddingAngle={4}
+                                                dataKey="value"
+                                                stroke="none"
+                                                startAngle={90}
+                                                endAngle={-270}
+                                            >
+                                                {donutData.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={entry.color} />
+                                                ))}
+                                            </Pie>
+                                            <Tooltip 
+                                                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 / 0.1)', fontSize: '11px', fontWeight: 'bold' }}
+                                            />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                    {/* Center Value */}
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                        <span className="text-3xl font-black text-blue-600 leading-none">{revenueProgressPercent}%</span>
+                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">ACHIEVED</span>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-6">
+                                    <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100 flex items-center gap-4 group/item hover:bg-blue-50/30 transition-colors">
+                                        <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-100 shrink-0">
+                                            <CheckCircle2 size={20} />
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">ACTUAL REVENUE</div>
+                                            <div className="text-xl font-black text-slate-800">${totalActual}k</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100 flex items-center gap-4 group/item hover:bg-orange-50/30 transition-colors">
+                                        <div className="w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center text-slate-500 shrink-0">
+                                            <AlertTriangle size={20} />
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">REVENUE GAP</div>
+                                            <div className="text-xl font-black text-slate-800">${revenueGap}k</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="pt-2 px-2">
+                                        <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
+                                            <TrendingUp size={14} className="text-blue-500" />
+                                            <span>You are <b>${revenueGap}k</b> away from the yearly target.</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-
-                            <div className="space-y-6">
-                                <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100 flex items-center gap-4 group/item hover:bg-blue-50/30 transition-colors">
-                                    <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-100 shrink-0">
-                                        <CheckCircle2 size={20} />
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">ACTUAL REVENUE</div>
-                                        <div className="text-xl font-black text-slate-800">${totalActual}k</div>
-                                    </div>
-                                </div>
-
-                                <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100 flex items-center gap-4 group/item hover:bg-orange-50/30 transition-colors">
-                                    <div className="w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center text-slate-500 shrink-0">
-                                        <AlertTriangle size={20} />
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">REVENUE GAP</div>
-                                        <div className="text-xl font-black text-slate-800">${revenueGap}k</div>
-                                    </div>
-                                </div>
-
-                                <div className="pt-2 px-2">
-                                    <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
-                                        <TrendingUp size={14} className="text-blue-500" />
-                                        <span>You are <b>${revenueGap}k</b> away from the yearly target.</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        )}
                     </div>
                 )}
 
