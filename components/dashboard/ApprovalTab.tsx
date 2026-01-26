@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { AccountPlan } from '../../types';
 import { 
@@ -162,23 +161,6 @@ const ApprovalTab: React.FC<ApprovalTabProps> = ({ plan, onUpdatePlan }) => {
                             <p className="text-xs text-slate-500 font-medium">Metric based on active time</p>
                         </div>
                     </div>
-                    {/* Simulation Buttons (For Demo) */}
-                    {history[0].action === 'Pending' && (
-                        <div className="flex gap-3">
-                            <button 
-                                onClick={() => setIsRejectModalOpen(true)}
-                                className="flex items-center gap-2 px-4 py-2 bg-white border border-red-200 text-red-600 hover:bg-red-50 rounded-lg text-sm font-bold transition-colors"
-                            >
-                                <XCircle size={16} /> Reject
-                            </button>
-                            <button 
-                                onClick={handleApprove}
-                                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-bold hover:bg-green-700 transition-colors shadow-sm"
-                            >
-                                <CheckCircle2 size={16} /> Approve
-                            </button>
-                        </div>
-                    )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
